@@ -31,6 +31,12 @@ class Shipment extends Model
 
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | RELATION
+    |--------------------------------------------------------------------------
+    */
+
     public function items(): HasMany
     {
         return $this->hasMany(ShipmentItem::class);
@@ -41,47 +47,98 @@ class Shipment extends Model
         return $this->hasMany(Sale::class);
     }
 
-    public function receiving(): HasMany
+    /*
+    |--------------------------------------------------------------------------
+    | ATTRIBUTE
+    |--------------------------------------------------------------------------
+    */
+
+    public function getPurchaseCountAttribute()
     {
-        return $this->hasMany(Receiving::class);
+        return $this->items()->count();
     }
 
-    /**
-     * Total berat pembelian berdasarkan jenis
-     */
-    public function purchaseSummary()
-    {
-        return PurchaseItem::selectRaw('
-                sea_cucumber_type_id,
-                SUM(weight) as total_weight
-            ')
-            ->join(
-                'shipment_items',
-                'shipment_items.purchase_id',
-                '=',
-                'purchase_items.purchase_id'
-            )
-            ->where('shipment_items.shipment_id', $this->id)
-            ->groupBy('sea_cucumber_type_id')
-            ->with('type')
-            ->get();
-    }
-
-    /**
-     * Total KG sudah terjual
-     */
-    public function totalSoldKg()
-    {
-        return SaleItem::join('sales', 'sales.id', '=', 'sale_items.sale_id')
-            ->where('sales.shipment_id', $this->id)
-            ->sum('sale_items.weight');
-    }
-
-    /**
-     * Total Invoice
-     */
-    public function totalInvoice()
+    public function getInvoiceCountAttribute()
     {
         return $this->sales()->count();
+    }
+
+    public function getShippingCostFormattedAttribute()
+    {
+        return number_format(
+            $this->shipping_cost,
+            0,
+            ',',
+            '.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    public function markArrived(): void
+    {
+        $this->update([
+            'status' => 'Sampai Gudang'
+        ]);
+    }
+
+    public function markPartial(): void
+    {
+        $this->update([
+            'status' => 'Terjual Sebagian'
+        ]);
+    }
+
+    public function markCompleted(): void
+    {
+        $this->update([
+            'status' => 'Selesai'
+        ]);
+    }
+        /*
+    |--------------------------------------------------------------------------
+    | BUSINESS HELPER
+    |--------------------------------------------------------------------------
+    */
+
+    public function totalPurchaseWeight(): float
+    {
+        return (float) $this->items
+            ->flatMap(function ($shipmentItem) {
+                return $shipmentItem->purchase->items;
+            })
+            ->sum('purchase_weight');
+    }
+
+    public function totalSoldWeight(): float
+    {
+        return (float) $this->sales
+            ->flatMap(function ($sale) {
+                return $sale->items;
+            })
+            ->sum('weight');
+    }
+
+    public function progressPercentage(): float
+    {
+        $purchase = $this->totalPurchaseWeight();
+
+        if ($purchase <= 0) {
+            return 0;
+        }
+
+        return round(
+            ($this->totalSoldWeight() / $purchase) * 100,
+            2
+        );
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === 'Selesai';
     }
 }
