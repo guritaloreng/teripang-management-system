@@ -2,399 +2,411 @@
 
 namespace App\Services;
 
-use App\Models\Shipment;
 use App\Models\Purchase;
-use App\Models\Sale;
-use App\Models\SaleItem;
+use App\Models\Shipment;
+use App\Models\ShipmentItem;
+use App\Models\ShipmentPurchase;
+use Illuminate\Support\Facades\DB;
 
 class ShipmentService
 {
-    /**
-     * Detail Shipment
-     */
-    public function detail(Shipment $shipment): array
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE SHIPMENT
+    |--------------------------------------------------------------------------
+    */
+
+    public function createShipment(array $data): Shipment
     {
-        $shipment->load([
+        return DB::transaction(function () use ($data) {
 
-            'items.purchase.supplier',
+            $shipment = Shipment::create([
 
-            'items.purchase.items.type',
+                'shipment_number' => $this->generateShipmentNumber(),
 
-            'sales.items.type'
+                'shipment_date'   => $data['shipment_date'],
+
+                'destination'     => $data['destination'],
+
+                'status'          => Shipment::STATUS_DRAFT,
+
+                'note'            => $data['note'] ?? null,
+
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Simpan daftar Purchase yang tergabung dalam Shipment
+            |--------------------------------------------------------------------------
+            */
+
+            foreach ($data['purchase_ids'] as $purchaseId) {
+
+                ShipmentPurchase::create([
+
+                    'shipment_id' => $shipment->id,
+
+                    'purchase_id' => $purchaseId,
+
+                ]);
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Ambil seluruh Purchase Item lalu gabungkan berdasarkan Jenis
+            |--------------------------------------------------------------------------
+            */
+
+            $summary = [];
+
+            foreach ($data['purchase_ids'] as $purchaseId) {
+
+                $purchase = Purchase::with('items')
+                    ->findOrFail($purchaseId);
+
+                foreach ($purchase->items as $item) {
+
+                    $typeId = $item->sea_cucumber_type_id;
+
+                    if (! isset($summary[$typeId])) {
+
+                        $summary[$typeId] = [
+
+                            'weight' => 0,
+
+                        ];
+
+                    }
+
+                    $summary[$typeId]['weight']
+                        += (float) $item->purchase_weight;
+
+                }
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Simpan ringkasan Shipment per Jenis Teripang
+            |--------------------------------------------------------------------------
+            */
+
+            foreach ($summary as $typeId => $value) {
+
+                ShipmentItem::create([
+
+                    'shipment_id' => $shipment->id,
+
+                    'sea_cucumber_type_id' => $typeId,
+
+                    'weight' => $value['weight'],
+
+                    'status' => 'Belum Dijual',
+
+                ]);
+
+            }
+
+            return $shipment->fresh([
+                'items',
+                'purchases',
+            ]);
+
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE SHIPMENT
+    |--------------------------------------------------------------------------
+    */
+    public function updateShipment(
+    Shipment $shipment,
+    array $data
+): Shipment
+{
+    return DB::transaction(function () use ($shipment, $data) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Header Shipment
+        |--------------------------------------------------------------------------
+        */
+
+        $shipment->update([
+
+            'shipment_date' => $data['shipment_date'],
+
+            'destination'   => $data['destination'],
+
+            'note'          => $data['note'] ?? null,
 
         ]);
 
-        return [
+        /*
+        |--------------------------------------------------------------------------
+        | Hapus seluruh relasi lama
+        |--------------------------------------------------------------------------
+        */
 
-            'shipment' => $shipment,
+        ShipmentPurchase::where(
+            'shipment_id',
+            $shipment->id
+        )->delete();
 
-            'purchaseSummary' => $this->purchaseSummary($shipment),
+        ShipmentItem::where(
+            'shipment_id',
+            $shipment->id
+        )->delete();
 
-            'saleSummary' => $this->saleSummary($shipment),
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan Purchase baru
+        |--------------------------------------------------------------------------
+        */
 
-            'invoiceSummary' => $this->invoiceSummary($shipment),
+        foreach ($data['purchase_ids'] as $purchaseId) {
 
-            'totalSoldKg' => $this->totalSoldKg($shipment),
+            ShipmentPurchase::create([
 
-            'totalInvoice' => $shipment->sales->count()
+                'shipment_id' => $shipment->id,
 
-        ];
-    }
+                'purchase_id' => $purchaseId,
 
-    /**
-     * Ringkasan pembelian
-     */
-    public function purchaseSummary(Shipment $shipment)
-    {
+            ]);
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hitung ulang seluruh jenis
+        |--------------------------------------------------------------------------
+        */
+
         $summary = [];
 
-        foreach ($shipment->items as $shipmentItem) {
+        foreach ($data['purchase_ids'] as $purchaseId) {
 
-            $purchase = $shipmentItem->purchase;
+            $purchase = Purchase::with('items')
+                ->findOrFail($purchaseId);
 
             foreach ($purchase->items as $item) {
 
                 $typeId = $item->sea_cucumber_type_id;
 
-                if (!isset($summary[$typeId])) {
+                if (! isset($summary[$typeId])) {
 
                     $summary[$typeId] = [
 
-                        'type_id' => $typeId,
-
-                        'type_name' => $item->type->name,
-
-                        'purchase_weight' => 0,
-
-                        'sold_weight' => 0
+                        'weight' => 0,
 
                     ];
 
                 }
 
-                $summary[$typeId]['purchase_weight']
-                    += $item->purchase_weight;
-            }
-        }
-
-        foreach ($shipment->sales as $sale) {
-
-            foreach ($sale->items as $item) {
-
-                if(isset($summary[$item->sea_cucumber_type_id])){
-
-                    $summary[$item->sea_cucumber_type_id]['sold_weight']
-                        += $item->weight;
-
-                }
+                $summary[$typeId]['weight']
+                    += (float) $item->purchase_weight;
 
             }
 
         }
 
-        return collect($summary)
-            ->sortBy('type_name')
-            ->values();
-    }
-    /**
-     * Ringkasan Penjualan
-     */
-    public function saleSummary(Shipment $shipment)
-    {
-        return $shipment->sales()
-            ->with('items.type')
-            ->orderBy('sale_date')
-            ->get();
-    }
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan Shipment Item baru
+        |--------------------------------------------------------------------------
+        */
 
-    /**
-     * Total Invoice
-     */
-    public function invoiceSummary(Shipment $shipment)
-    {
-        return $shipment->sales()
-            ->orderBy('sale_date')
-            ->get()
-            ->map(function ($sale) {
+        foreach ($summary as $typeId => $value) {
 
-                return [
+            ShipmentItem::create([
 
-                    'id' => $sale->id,
+                'shipment_id' => $shipment->id,
 
-                    'invoice' => $sale->invoice_number,
+                'sea_cucumber_type_id' => $typeId,
 
-                    'buyer' => $sale->buyer,
-
-                    'date' => $sale->sale_date,
-
-                    'total_kg' => $sale->items->sum('weight'),
-
-                    'grand_total' => $sale->items->sum('subtotal')
-
-                ];
-
-            });
-
-    }
-
-    /**
-     * Total Kg Terjual
-     */
-    public function totalSoldKg(Shipment $shipment): float
-    {
-        return (float) $shipment->sales()
-            ->with('items')
-            ->get()
-            ->flatMap(function ($sale) {
-
-                return $sale->items;
-
-            })
-            ->sum('weight');
-    }
-
-    /**
-     * Total Berat Pembelian
-     */
-    public function totalPurchaseKg(Shipment $shipment): float
-    {
-        $total = 0;
-
-        foreach ($shipment->items as $shipmentItem) {
-
-            foreach ($shipmentItem->purchase->items as $item) {
-
-                $total += $item->purchase_weight;
-
-            }
-
-        }
-
-        return (float) $total;
-    }
-
-    /**
-     * Progress Shipment
-     */
-    public function progress(Shipment $shipment): array
-    {
-        $purchase = $this->totalPurchaseKg($shipment);
-
-        $sold = $this->totalSoldKg($shipment);
-
-        if ($sold <= 0) {
-
-            return [
+                'weight' => $value['weight'],
 
                 'status' => 'Belum Dijual',
 
-                'percent' => 0
-
-            ];
+            ]);
 
         }
 
-        if ($sold >= $purchase) {
+        return $shipment->fresh([
+            'items',
+            'purchases',
+        ]);
+
+    });
+}
+
+/*
+|--------------------------------------------------------------------------
+| DELETE SHIPMENT
+|--------------------------------------------------------------------------
+*/
+
+public function deleteShipment(
+    Shipment $shipment
+): void
+{
+    DB::transaction(function () use ($shipment) {
+
+        ShipmentPurchase::where(
+            'shipment_id',
+            $shipment->id
+        )->delete();
+
+        ShipmentItem::where(
+            'shipment_id',
+            $shipment->id
+        )->delete();
+
+        $shipment->delete();
+
+    });
+}
+
+/*
+|--------------------------------------------------------------------------
+| SHIPMENT SUMMARY
+|--------------------------------------------------------------------------
+*/
+public function summary(
+    Shipment $shipment
+): array
+{
+    $shipment->loadMissing([
+        'items.type',
+        'purchases.purchase',
+        'sales.items',
+    ]);
+
+    return [
+
+        'purchase_count' => $this->purchaseSummary($shipment),
+
+        'type_count' => $this->typeSummary($shipment),
+
+        'total_weight' => $this->totalShipmentWeight($shipment),
+
+        'grand_total' => $this->grandTotal($shipment),
+
+    ];
+}
+
+/*
+|--------------------------------------------------------------------------
+| SUMMARY
+|--------------------------------------------------------------------------
+*/
+
+public function purchaseSummary(
+    Shipment $shipment
+): int
+{
+    return $shipment->purchases->count();
+}
+
+public function typeSummary(
+    Shipment $shipment
+): int
+{
+    return $shipment->items->count();
+}
+
+/*
+|--------------------------------------------------------------------------
+| TOTAL BERAT SHIPMENT
+|--------------------------------------------------------------------------
+*/
+
+public function totalShipmentWeight(
+    Shipment $shipment
+): float
+{
+    return (float) $shipment->items
+        ->sum('weight');
+}
+
+/*
+|--------------------------------------------------------------------------
+| TOTAL MODAL PEMBELIAN
+|--------------------------------------------------------------------------
+*/
+
+public function grandTotal(
+    Shipment $shipment
+): float
+{
+    return (float) $shipment->purchases
+        ->sum(function ($shipmentPurchase) {
+
+            return $shipmentPurchase
+                ->purchase
+                ->grand_total;
+
+        });
+}
+
+/*
+|--------------------------------------------------------------------------
+| PROGRESS PER TYPE
+|--------------------------------------------------------------------------
+*/
+
+public function progressPerType(
+    Shipment $shipment
+): array
+{
+    $shipment->loadMissing([
+        'items.type',
+    ]);
+
+    return $shipment->items
+        ->map(function ($item) {
 
             return [
 
-                'status' => 'Selesai',
+                'shipment_item_id' => $item->id,
 
-                'percent' => 100
+                'type_id' => $item->sea_cucumber_type_id,
+
+                'type_name' => $item->type->name,
+
+                'weight' => (float) $item->weight,
+
+                'status' => $item->status,
 
             ];
 
-        }
+        })
+        ->values()
+        ->toArray();
+}
 
-        return [
+/*
+|--------------------------------------------------------------------------
+| GENERATE SHIPMENT NUMBER
+|--------------------------------------------------------------------------
+*/
 
-            'status' => 'Terjual Sebagian',
+protected function generateShipmentNumber(): string
+{
+    $last = Shipment::latest('id')->first();
 
-            'percent' => round(
+    $next = $last
+        ? $last->id + 1
+        : 1;
 
-                ($sold / max($purchase, 1)) * 100,
-
-                2
-
-            )
-
-        ];
-    }
-        /**
-     * Jenis Teripang Yang Ada Di Shipment
-     *
-     * Dipakai untuk dropdown Tambah Penjualan.
-     * Hanya menampilkan jenis yang benar-benar
-     * berasal dari Purchase pada Shipment ini.
-     */
-    public function availableTypes(Shipment $shipment)
-    {
-        $types = [];
-
-        foreach ($shipment->items as $shipmentItem) {
-
-            foreach ($shipmentItem->purchase->items as $item) {
-
-                $id = $item->sea_cucumber_type_id;
-
-                if (!isset($types[$id])) {
-
-                    $types[$id] = [
-
-                        'id' => $id,
-
-                        'name' => $item->type->name,
-
-                        'purchase_weight' => 0,
-
-                        'sold_weight' => 0,
-
-                        'remaining_weight' => 0
-
-                    ];
-
-                }
-
-                $types[$id]['purchase_weight']
-                    += $item->purchase_weight;
-
-            }
-
-        }
-
-        foreach ($shipment->sales as $sale) {
-
-            foreach ($sale->items as $item) {
-
-                if(isset($types[$item->sea_cucumber_type_id])){
-
-                    $types[$item->sea_cucumber_type_id]['sold_weight']
-                        += $item->weight;
-
-                }
-
-            }
-
-        }
-
-        foreach ($types as &$type){
-
-            $type['remaining_weight']
-                = $type['purchase_weight']
-                - $type['sold_weight'];
-
-        }
-
-        return collect($types)
-            ->sortBy('name')
-            ->values();
-    }
-
-    /**
-     * Validasi Berat Penjualan
-     *
-     * Mencegah berat jual melebihi
-     * total berat pembelian.
-     */
-    public function validateSaleWeight(
-        Shipment $shipment,
-        int $typeId,
-        float $weight
-    ): bool
-    {
-        $types = $this->availableTypes($shipment);
-
-        $type = $types->firstWhere('id', $typeId);
-
-        if (!$type) {
-
-            return false;
-
-        }
-
-        return $weight <= $type['remaining_weight'];
-    }
-
-    /**
-     * Hitung Grand Total Invoice
-     */
-    public function calculateGrandTotal(array $items): float
-    {
-        $grandTotal = 0;
-
-        foreach ($items as $item) {
-
-            $grandTotal +=
-                ($item['weight'] * $item['price']);
-
-        }
-
-        return $grandTotal;
-    }
-        /**
-     * Update Status Shipment
-     */
-    public function updateShipmentStatus(Shipment $shipment): void
-    {
-        $progress = $this->progress($shipment);
-
-        $shipment->status = $progress['status'];
-
-        $shipment->save();
-    }
-
-    /**
-     * Tandai Shipment Selesai
-     */
-    public function complete(Shipment $shipment): void
-    {
-        $shipment->status = 'Selesai';
-
-        $shipment->save();
-    }
-
-    /**
-     * Tandai Barang Sudah Sampai Gudang
-     */
-    public function arrived(Shipment $shipment): void
-    {
-        $shipment->status = 'Sampai Gudang';
-
-        $shipment->save();
-    }
-
-    /**
-     * Data Untuk Form Tambah Penjualan
-     */
-    public function saleForm(Shipment $shipment): array
-    {
-        return [
-
-            'shipment' => $shipment,
-
-            'types' => $this->availableTypes($shipment)
-
-        ];
-    }
-
-    /**
-     * Refresh Dashboard Shipment
-     */
-    public function refresh(Shipment $shipment): array
-    {
-        return [
-
-            'summary' => $this->purchaseSummary($shipment),
-
-            'invoice' => $this->invoiceSummary($shipment),
-
-            'progress' => $this->progress($shipment),
-
-            'soldKg' => $this->totalSoldKg($shipment),
-
-            'purchaseKg' => $this->totalPurchaseKg($shipment)
-
-        ];
-    }
-
+    return 'SHP-'
+        . str_pad(
+            $next,
+            6,
+            '0',
+            STR_PAD_LEFT
+        );
+}
 }

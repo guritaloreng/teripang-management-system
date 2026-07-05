@@ -6,46 +6,52 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('shipment_items', function (Blueprint $table) {
+        Schema::create('expenses', function (Blueprint $table) {
 
             $table->id();
 
             /*
             |--------------------------------------------------------------------------
-            | Relation
+            | Expense Information
             |--------------------------------------------------------------------------
             */
 
-            $table->foreignId('shipment_id')
-                ->constrained()
-                ->cascadeOnDelete();
+            $table->date('expense_date');
 
-            $table->foreignId('sea_cucumber_type_id')
-                ->constrained();
+            $table->foreignId('shipment_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
+            $table->string('expense_name');
+
+            $table->decimal('amount', 18, 2);
+
+            $table->string('description');
+
+            $table->text('note')
+                ->nullable();
 
             /*
             |--------------------------------------------------------------------------
-            | Shipment Data
+            | Timestamp
             |--------------------------------------------------------------------------
             */
-
-            $table->decimal('weight',12,2);
-
-            $table->enum('status',[
-                'Belum Dijual',
-                'Terjual Sebagian',
-                'Selesai'
-            ])->default('Belum Dijual');
 
             $table->timestamps();
 
         });
     }
-
+        /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('shipment_items');
+        Schema::dropIfExists('expenses');
     }
 };

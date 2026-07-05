@@ -5,20 +5,23 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Teripang Management System</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+          rel="stylesheet">
 
     <style>
 
         *{
-            font-family:Segoe UI, Arial, sans-serif;
+            font-family:Segoe UI,Arial,sans-serif;
         }
 
         body{
             background:#f4f6f9;
+            margin:0;
         }
 
         .navbar{
@@ -54,10 +57,11 @@
         .sidebar ul{
             list-style:none;
             padding:0;
+            margin:0;
         }
 
         .sidebar li{
-            margin:12px 0;
+            margin:10px 0;
         }
 
         .sidebar a{
@@ -70,16 +74,12 @@
         }
 
         .sidebar a:hover{
-
             background:#526D82;
-
         }
 
         .content{
-
             flex:1;
             padding:30px;
-
         }
 
     </style>
@@ -90,188 +90,188 @@
 
 <div class="navbar">
 
-🐚 Teripang Management System 海参管理系统
+    🐚 Teripang Management System 海参管理系统
 
 </div>
 
 <div class="container-app">
 
-<div class="sidebar">
+    <div class="sidebar">
 
-<ul>
+        <ul>
 
-<li>
+            <li>
 
-<a href="{{ url('/') }}">
+                <a href="{{ route('home') }}">
 
-🏠 Dashboard / 仪表盘
+                    🏠 Dashboard / 仪表盘
 
-</a>
+                </a>
 
-</li>
+            </li>
 
-</ul>
+        </ul>
 
-<h6>
+        <h6>
 
-📋 Master Data / 主数据
+            📋 Master Data / 主数据
 
-</h6>
+        </h6>
 
-<ul>
+        <ul>
 
-<li>
+            <li>
 
-<a href="{{ route('suppliers.index') }}">
+                <a href="{{ route('suppliers.index') }}">
 
-👨 Supplier / 供应商
+                    👨 Supplier / 供应商
 
-</a>
+                </a>
 
-</li>
+            </li>
 
-<li>
+            <li>
 
-<a href="{{ route('sea-cucumber-types.index') }}">
+                <a href="{{ route('sea-cucumber-types.index') }}">
 
-🐚 Jenis Teripang / 海参种类
+                    🐚 Jenis Teripang / 海参种类
 
-</a>
+                </a>
 
-</li>
+            </li>
 
-<li>
+            <li>
 
-<a href="#">
+                <a href="{{ route('investors.index') }}">
 
-💰 Investor / 投资人
+                    💰 Investor / 投资人
 
-</a>
+                </a>
 
-</li>
+            </li>
 
-</ul>
+        </ul>
+                <h6>
 
-<h6>
+            🧾 Transaksi / 交易
 
-🧾 Transaksi / 交易
+        </h6>
 
-</h6>
+        <ul>
 
-<ul>
+            <li>
 
-<li>
+                <a href="{{ route('purchases.index') }}">
 
-<a href="{{ route('purchases.index') }}">
+                    📥 Nota Pembelian / 采购单
 
-📥 Nota Pembelian / 采购单
+                </a>
 
-</a>
+            </li>
 
-</li>
+            <li>
 
-<li>
+                <a href="{{ route('shipments.index') }}">
 
-<a href="#">
+                    🚚 Pengiriman / 发货
 
-🚚 Pengiriman / 发货
+                </a>
 
-</a>
+            </li>
 
-</li>
+            <li>
 
-<li>
+                <a href="#">
 
-<a href="#">
+                    📤 Nota Penjualan / 销售单
 
-📤 Nota Penjualan / 销售单
+                </a>
 
-</a>
+            </li>
 
-</li>
+            <li>
 
-<li>
+                <a href="{{ route('expenses.index') }}">
 
-<a href="#">
+                    💸 Pengeluaran / 支出
 
-💸 Pengeluaran / 支出
+                </a>
 
-</a>
+            </li>
 
-</li>
+        </ul>
 
-</ul>
+        <h6>
 
-<h6>
+            📊 Laporan / 报表
 
-📊 Laporan / 报表
+        </h6>
 
-</h6>
+        <ul>
 
-<ul>
+            <li>
 
-<li>
+                <a href="#">
 
-<a href="#">
+                    💵 Buku Kas / 现金账
 
-💵 Cash Flow / 现金流
+                </a>
 
-</a>
+            </li>
 
-</li>
+            <li>
 
-<li>
+                <a href="#">
 
-<a href="#">
+                    💵 Cash Flow / 现金流
 
-📈 Profit per Jenis / 每种利润
+                </a>
 
-</a>
+            </li>
 
-</li>
+            <li>
 
-<li>
+                <a href="#">
 
-<a href="#">
+                    📈 Profit per Jenis / 每种利润
 
-📦 Profit Pengiriman / 每批利润
+                </a>
 
-</a>
+            </li>
 
-</li>
+            <li>
 
-<li>
+                <a href="#">
 
-<a href="#">
+                    📦 Profit Pengiriman / 每批利润
 
-📉 Susut / 损耗
+                </a>
 
-</a>
+            </li>
 
-</li>
+            <li>
 
-</ul>
+                <a href="#">
+
+                    📉 Susut / 损耗
+
+                </a>
+
+            </li>
+
+        </ul>
+            </div>
+
+    <div class="content">
+
+        @yield('content')
+
+    </div>
 
 </div>
 
-<div class="content">
-
-@yield('content')
-
-</div>
-
-</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
 </html>
-
-<li class="nav-item">
-
-<a href="{{ route('receivings.index') }}">
-
-📦 Receiving / 收货
-
-</a>
-
-</li>

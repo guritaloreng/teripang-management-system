@@ -4,216 +4,266 @@
 
 <div class="container-fluid">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-<div>
+        <div>
 
-<h2>🚚 Buat Shipment / 创建发货</h2>
+            <h2>🚚 Buat Shipment / 创建发货</h2>
 
-<small>Pilih Nota Pembelian yang akan dikirim</small>
+            <small class="text-muted">
 
-</div>
+                Pilih Nota Pembelian yang akan dikirim
 
-<a href="{{ route('shipments.index') }}" class="btn btn-secondary">
+            </small>
 
-← Kembali
+        </div>
 
-</a>
+        <a href="{{ route('shipments.index') }}"
+           class="btn btn-secondary">
 
-</div>
+            ← Kembali
 
-<form method="POST" action="{{ route('shipments.store') }}">
+        </a>
 
-@csrf
+    </div>
 
-<div class="card mb-4">
+    @if($errors->any())
 
-<div class="card-header bg-primary text-white">
+        <div class="alert alert-danger">
 
-Informasi Shipment
+            <ul class="mb-0">
 
-</div>
+                @foreach($errors->all() as $error)
 
-<div class="card-body">
+                    <li>{{ $error }}</li>
 
-<div class="row">
+                @endforeach
 
-<div class="col-md-3">
+            </ul>
 
-<label>Tanggal</label>
+        </div>
 
-<input
-type="date"
-name="shipment_date"
-class="form-control"
-value="{{ date('Y-m-d') }}"
-required>
+    @endif
 
-</div>
+    <form method="POST"
+          action="{{ route('shipments.store') }}">
 
-<div class="col-md-3">
+        @csrf
 
-<label>Tujuan</label>
+        <div class="card shadow-sm mb-4">
 
-<input
-type="text"
-name="destination"
-class="form-control"
-value="Makassar"
-required>
+            <div class="card-header bg-primary text-white">
 
-</div>
+                Informasi Shipment
 
-<div class="col-md-3">
+            </div>
 
-<label>Ongkir</label>
+            <div class="card-body">
 
-<input
-type="number"
-step="0.01"
-name="shipping_cost"
-class="form-control"
-value="0">
+                <div class="row">
 
-</div>
+                    <div class="col-md-4">
 
-<div class="col-md-3">
+                        <label class="form-label">
 
-<label>Status</label>
+                            Tanggal Shipment
 
-<input
-type="text"
-class="form-control"
-value="Dalam Pengiriman"
-readonly>
+                        </label>
 
-</div>
+                        <input
+                            type="date"
+                            name="shipment_date"
+                            class="form-control"
+                            value="{{ old('shipment_date', date('Y-m-d')) }}"
+                            required>
 
-<div class="col-md-12 mt-3">
+                    </div>
 
-<label>Catatan</label>
+                    <div class="col-md-4">
 
-<textarea
-name="note"
-rows="2"
-class="form-control"></textarea>
+                        <label class="form-label">
 
-</div>
+                            Tujuan
 
-</div>
+                        </label>
 
-</div>
+                        <input
+                            type="text"
+                            name="destination"
+                            class="form-control"
+                            value="{{ old('destination','Makassar') }}"
+                            required>
 
-</div>
+                    </div>
 
-<div class="card">
+                    <div class="col-md-12 mt-3">
 
-<div class="card-header bg-success text-white">
+                        <label class="form-label">
 
-Pilih Nota Pembelian
+                            Catatan
 
-</div>
+                        </label>
 
-<div class="card-body p-0">
+                        <textarea
+                            name="note"
+                            rows="3"
+                            class="form-control">{{ old('note') }}</textarea>
 
-<table class="table table-bordered table-hover mb-0">
+                    </div>
 
-<thead class="table-dark">
+                </div>
 
-<tr>
+            </div>
 
-<th width="60">
+        </div>
 
-Pilih
+        <div class="card shadow-sm">
 
-</th>
+            <div class="card-header bg-success text-white">
 
-<th>No Purchase</th>
+                Pilih Nota Pembelian
 
-<th>Tanggal</th>
+            </div>
 
-<th>Supplier</th>
+            <div class="table-responsive">
 
-<th>Total</th>
+                <table class="table table-bordered table-hover mb-0">
 
-</tr>
+                    <thead class="table-dark">
 
-</thead>
+                        <tr>
 
-<tbody>
+                            <th width="60">
 
-@forelse($purchases as $purchase)
+                                Pilih
 
-<tr>
+                            </th>
 
-<td>
+                            <th>
 
-<input
-type="checkbox"
-name="purchase_ids[]"
-value="{{ $purchase->id }}">
+                                No Purchase
 
-</td>
+                            </th>
 
-<td>
+                            <th width="120">
 
-{{ $purchase->purchase_number }}
+                                Tanggal
 
-</td>
+                            </th>
 
-<td>
+                            <th>
 
-{{ $purchase->purchase_date->format('d-m-Y') }}
+                                Supplier
 
-</td>
+                            </th>
 
-<td>
+                            <th class="text-end">
 
-{{ $purchase->supplier->name }}
+                                Berat
 
-</td>
+                            </th>
 
-<td>
+                            <th class="text-end">
 
-Rp {{ number_format($purchase->grand_total,0,',','.') }}
+                                Grand Total
 
-</td>
+                            </th>
 
-</tr>
+                        </tr>
 
-@empty
+                    </thead>
 
-<tr>
+                    <tbody>
 
-<td colspan="5" class="text-center">
+                    @forelse($purchases as $purchase)
 
-Semua nota sudah masuk shipment.
+                        <tr>
 
-</td>
+                            <td class="text-center">
 
-</tr>
+                                <input
+                                    type="checkbox"
+                                    name="purchase_ids[]"
+                                    value="{{ $purchase->id }}">
 
-@endforelse
+                            </td>
 
-</tbody>
+                            <td>
 
-</table>
+                                {{ $purchase->purchase_number }}
 
-</div>
+                            </td>
 
-</div>
+                            <td>
 
-<div class="mt-4 text-end">
+                                {{ $purchase->purchase_date->format('d-m-Y') }}
 
-<button class="btn btn-primary btn-lg">
+                            </td>
 
-💾 Simpan Shipment
+                            <td>
 
-</button>
+                                {{ $purchase->supplier->name }}
 
-</div>
+                            </td>
 
-</form>
+                            <td class="text-end">
+
+                                {{ number_format(
+                                    $purchase->items->sum('purchase_weight'),
+                                    2
+                                ) }} Kg
+
+                            </td>
+
+                            <td class="text-end">
+
+                                Rp {{ number_format(
+                                    $purchase->grand_total,
+                                    0,
+                                    ',',
+                                    '.'
+                                ) }}
+
+                            </td>
+
+                        </tr>
+
+                    @empty
+
+                        <tr>
+
+                            <td colspan="6"
+                                class="text-center py-4">
+
+                                Tidak ada Purchase yang siap dikirim.
+
+                            </td>
+
+                        </tr>
+
+                    @endforelse
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <div class="mt-4 text-end">
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-lg">
+
+                💾 Simpan Shipment
+
+            </button>
+
+        </div>
+
+    </form>
 
 </div>
 

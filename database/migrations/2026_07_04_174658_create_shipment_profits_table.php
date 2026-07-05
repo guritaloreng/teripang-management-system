@@ -6,64 +6,63 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('sale_items', function (Blueprint $table) {
+        Schema::create('shipment_profits', function (Blueprint $table) {
 
             $table->id();
 
             /*
             |--------------------------------------------------------------------------
-            | Relation
+            | Shipment
             |--------------------------------------------------------------------------
             */
 
-            $table->foreignId('sale_id')
+            $table->foreignId('shipment_id')
+                ->unique()
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->foreignId('sea_cucumber_type_id')
-                ->constrained();
-
             /*
             |--------------------------------------------------------------------------
-            | Transaction
+            | Cost
             |--------------------------------------------------------------------------
             */
 
-            $table->decimal('weight', 10, 2);
+            $table->decimal('purchase_total',18,2)
+                ->default(0);
 
-            $table->decimal('price', 18, 2);
+            $table->decimal('expense_total',18,2)
+                ->default(0);
 
-            $table->decimal('subtotal', 18, 2);
+            $table->decimal('total_cost',18,2)
+                ->default(0);
 
             /*
             |--------------------------------------------------------------------------
-            | Business Status
+            | Revenue
             |--------------------------------------------------------------------------
             */
 
-            $table->enum('status', [
+            $table->decimal('sale_total',18,2)
+                ->default(0);
 
-                'Terjual Sebagian',
+            /*
+            |--------------------------------------------------------------------------
+            | Profit
+            |--------------------------------------------------------------------------
+            */
 
-                'Selesai',
-
-            ]);
+            $table->decimal('profit',18,2)
+                ->default(0);
 
             $table->timestamps();
 
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('sale_items');
+        Schema::dropIfExists('shipment_profits');
     }
 };

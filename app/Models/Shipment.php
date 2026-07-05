@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shipment extends Model
 {
+    public const STATUS_DRAFT = 'Draft';
+
     protected $fillable = [
 
         'shipment_number',
@@ -17,9 +19,7 @@ class Shipment extends Model
 
         'status',
 
-        'shipping_cost',
-
-        'note'
+        'note',
 
     ];
 
@@ -27,21 +27,27 @@ class Shipment extends Model
 
         'shipment_date' => 'date',
 
-        'shipping_cost' => 'decimal:2'
-
     ];
 
     /*
     |--------------------------------------------------------------------------
-    | RELATION
+    | RELATIONSHIP
     |--------------------------------------------------------------------------
     */
 
+    // Jenis teripang yang ada di Shipment
     public function items(): HasMany
     {
         return $this->hasMany(ShipmentItem::class);
     }
 
+    // Daftar Purchase yang tergabung dalam Shipment
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(ShipmentPurchase::class);
+    }
+
+    // Semua nota penjualan dari Shipment ini
     public function sales(): HasMany
     {
         return $this->hasMany(Sale::class);
@@ -49,92 +55,13 @@ class Shipment extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | ATTRIBUTE
+    | HELPER
     |--------------------------------------------------------------------------
     */
 
-    public function getPurchaseCountAttribute()
+    public function isDraft(): bool
     {
-        return $this->items()->count();
-    }
-
-    public function getInvoiceCountAttribute()
-    {
-        return $this->sales()->count();
-    }
-
-    public function getShippingCostFormattedAttribute()
-    {
-        return number_format(
-            $this->shipping_cost,
-            0,
-            ',',
-            '.'
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | STATUS
-    |--------------------------------------------------------------------------
-    */
-
-    public function markArrived(): void
-    {
-        $this->update([
-            'status' => 'Sampai Gudang'
-        ]);
-    }
-
-    public function markPartial(): void
-    {
-        $this->update([
-            'status' => 'Terjual Sebagian'
-        ]);
-    }
-
-    public function markCompleted(): void
-    {
-        $this->update([
-            'status' => 'Selesai'
-        ]);
-    }
-        /*
-    |--------------------------------------------------------------------------
-    | BUSINESS HELPER
-    |--------------------------------------------------------------------------
-    */
-
-    public function totalPurchaseWeight(): float
-    {
-        return (float) $this->items
-            ->flatMap(function ($shipmentItem) {
-                return $shipmentItem->purchase->items;
-            })
-            ->sum('purchase_weight');
-    }
-
-    public function totalSoldWeight(): float
-    {
-        return (float) $this->sales
-            ->flatMap(function ($sale) {
-                return $sale->items;
-            })
-            ->sum('weight');
-    }
-
-    public function progressPercentage(): float
-    {
-        $purchase = $this->totalPurchaseWeight();
-
-        if ($purchase <= 0) {
-            return 0;
-        }
-
-        return round(
-            ($this->totalSoldWeight() / $purchase) * 100,
-            2
-        );
+        return $this->status === self::STATUS_DRAFT;
     }
 
     public function isCompleted(): bool

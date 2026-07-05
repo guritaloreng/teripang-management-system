@@ -4,136 +4,439 @@
 
 <div class="container-fluid">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-<h2>🚚 Detail Shipment / 发货详情</h2>
+        <div>
 
-<a href="{{ route('shipments.index') }}" class="btn btn-secondary">
+            <h2>🚚 Detail Shipment</h2>
 
-← Kembali
+            <small class="text-muted">
 
-</a>
+                {{ $shipment->shipment_number }}
+
+            </small>
+
+        </div>
+
+        <div>
+
+            <a href="{{ route('shipments.index') }}"
+               class="btn btn-secondary">
+
+                ← Kembali
+
+            </a>
+
+            <a href="{{ route('sales.create',$shipment) }}"
+               class="btn btn-success">
+
+                + Tambah Penjualan
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header bg-primary text-white">
+
+                    Informasi Shipment
+
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-sm">
+
+                        <tr>
+
+                            <th width="140">Nomor</th>
+
+                            <td>{{ $shipment->shipment_number }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Tanggal</th>
+
+                            <td>{{ $shipment->shipment_date->format('d-m-Y') }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Tujuan</th>
+
+                            <td>{{ $shipment->destination }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Status</th>
+
+                            <td>
+
+                                <span class="badge bg-primary">
+
+                                    {{ $shipment->status }}
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Catatan</th>
+
+                            <td>
+
+                                {{ $shipment->note ?: '-' }}
+
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-8">
+
+            <div class="row g-3">
+
+                <div class="col-md-3">
+
+                    <div class="card shadow-sm text-center">
+
+                        <div class="card-body">
+
+                            <h3>
+
+                                {{ $summary['purchase_count'] }}
+
+                            </h3>
+
+                            <small>Total Nota</small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="card shadow-sm text-center">
+
+                        <div class="card-body">
+
+                            <h3>
+
+                                {{ $summary['type_count'] }}
+
+                            </h3>
+
+                            <small>Jenis Teripang</small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="card shadow-sm text-center">
+
+                        <div class="card-body">
+
+                            <h5>
+
+                                {{ number_format($summary['total_weight'],2) }}
+
+                                Kg
+
+                            </h5>
+
+                            <small>Total Berat</small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="card shadow-sm text-center">
+
+                        <div class="card-body">
+
+                            <h6>
+
+                                Rp {{ number_format($summary['grand_total'],0,',','.') }}
+
+                            </h6>
+
+                            <small>Total Modal</small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <div class="card mt-4 shadow-sm">
+
+    <div class="card-header bg-warning">
+
+        <strong>Progress Penjualan per Jenis</strong>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-bordered table-hover mb-0">
+
+            <thead class="table-dark">
+
+                <tr>
+
+                    <th width="60">No</th>
+
+                    <th>Jenis Teripang</th>
+
+                    <th class="text-end">Berat Shipment</th>
+
+                    <th class="text-center">Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @forelse($progressPerType as $index => $item)
+
+                    <tr>
+
+                        <td>
+
+                            {{ $index + 1 }}
+
+                        </td>
+
+                        <td>
+
+                            {{ $item['type_name'] }}
+
+                        </td>
+
+                        <td class="text-end">
+
+                            {{ number_format($item['weight'],2) }} Kg
+
+                        </td>
+
+                        <td class="text-center">
+
+                            @switch($item['status'])
+
+                                @case('Belum Dijual')
+
+                                    <span class="badge bg-secondary">
+
+                                        Belum Dijual
+
+                                    </span>
+
+                                    @break
+
+                                @case('Terjual Sebagian')
+
+                                    <span class="badge bg-warning text-dark">
+
+                                        Terjual Sebagian
+
+                                    </span>
+
+                                    @break
+
+                                @case('Selesai')
+
+                                    <span class="badge bg-success">
+
+                                        Selesai
+
+                                    </span>
+
+                                    @break
+
+                                @default
+
+                                    <span class="badge bg-info">
+
+                                        {{ $item['status'] }}
+
+                                    </span>
+
+                            @endswitch
+
+                        </td>
+
+                    </tr>
+
+                @empty
+
+                    <tr>
+
+                        <td colspan="4" class="text-center">
+
+                            Belum ada data jenis teripang.
+
+                        </td>
+
+                    </tr>
+
+                @endforelse
+
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
+<div class="card mt-4 shadow-sm">
 
-<div class="card mb-4">
+    <div class="card-header bg-success text-white">
 
-<div class="card-body">
+        <strong>Daftar Purchase dalam Shipment</strong>
 
-<table class="table">
+    </div>
 
-<tr>
+    <div class="table-responsive">
 
-<th width="220">No Shipment</th>
+        <table class="table table-bordered table-hover mb-0">
 
-<td>{{ $shipment->shipment_number }}</td>
+            <thead class="table-dark">
 
-</tr>
+                <tr>
 
-<tr>
+                    <th width="60">No</th>
 
-<th>Tanggal</th>
+                    <th>No Purchase</th>
 
-<td>{{ $shipment->shipment_date->format('d-m-Y') }}</td>
+                    <th>Tanggal</th>
 
-</tr>
+                    <th>Supplier</th>
 
-<tr>
+                    <th class="text-end">Total Berat</th>
 
-<th>Tujuan</th>
+                    <th class="text-end">Grand Total</th>
 
-<td>{{ $shipment->destination }}</td>
+                </tr>
 
-</tr>
+            </thead>
 
-<tr>
+            <tbody>
 
-<th>Status</th>
+                @forelse($shipment->purchases as $index => $shipmentPurchase)
 
-<td>{{ $shipment->status }}</td>
+                    @php
 
-</tr>
+                        $purchase = $shipmentPurchase->purchase;
 
-<tr>
+                    @endphp
 
-<th>Ongkir</th>
+                    <tr>
 
-<td>
+                        <td>
 
-Rp {{ number_format($shipment->shipping_cost,0,',','.') }}
+                            {{ $index + 1 }}
 
-</td>
+                        </td>
 
-</tr>
+                        <td>
 
-<tr>
+                            {{ $purchase->purchase_number }}
 
-<th>Catatan</th>
+                        </td>
 
-<td>{{ $shipment->note }}</td>
+                        <td>
 
-</tr>
+                            {{ $purchase->purchase_date->format('d-m-Y') }}
 
-</table>
+                        </td>
 
-</div>
+                        <td>
 
-</div>
+                            {{ $purchase->supplier->name }}
 
-<div class="card">
+                        </td>
 
-<div class="card-header bg-success text-white">
+                        <td class="text-end">
 
-Daftar Nota
+                            {{ number_format(
+                                $purchase->items->sum('purchase_weight'),
+                                2
+                            ) }} Kg
 
-</div>
+                        </td>
 
-<div class="card-body p-0">
+                        <td class="text-end">
 
-<table class="table table-bordered mb-0">
+                            Rp {{ number_format(
+                                $purchase->grand_total,
+                                0,
+                                ',',
+                                '.'
+                            ) }}
 
-<thead class="table-dark">
+                        </td>
 
-<tr>
+                    </tr>
 
-<th>No Purchase</th>
+                @empty
 
-<th>Supplier</th>
+                    <tr>
 
-<th>Total</th>
+                        <td colspan="6" class="text-center">
 
-</tr>
+                            Belum ada Purchase pada Shipment ini.
 
-</thead>
+                        </td>
 
-<tbody>
+                    </tr>
 
-@foreach($shipment->items as $item)
+                @endforelse
 
-<tr>
+            </tbody>
 
-<td>{{ $item->purchase->purchase_number }}</td>
+        </table>
 
-<td>{{ $item->purchase->supplier->name }}</td>
-
-<td>
-
-Rp {{ number_format($item->purchase->grand_total,0,',','.') }}
-
-</td>
-
-</tr>
-
-@endforeach
-
-</tbody>
-
-</table>
+    </div>
 
 </div>
-
-</div>
-
 </div>
 
 @endsection

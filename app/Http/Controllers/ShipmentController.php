@@ -4,109 +4,238 @@ namespace App\Http\Controllers;
 
 use App\Models\Purchase;
 use App\Models\Shipment;
-use App\Models\ShipmentItem;
+use App\Services\ShipmentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ShipmentController extends Controller
 {
+    protected ShipmentService $shipmentService;
+
+    public function __construct(ShipmentService $shipmentService)
+    {
+        $this->shipmentService = $shipmentService;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | INDEX
+    |--------------------------------------------------------------------------
+    */
+
     public function index()
     {
-        $shipments = Shipment::with('items.purchase.supplier')
-            ->latest()
-            ->paginate(20);
+        $shipments = Shipment::with([
+            'items.type',
+            'purchases.purchase.supplier',
+        ])
+        ->latest()
+        ->paginate(20);
 
-        return view('shipments.index', compact('shipments'));
+        return view(
+            'shipments.index',
+            compact('shipments')
+        );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE
+    |--------------------------------------------------------------------------
+    */
 
     public function create()
     {
-        $purchases = Purchase::with('supplier')
+        $purchases = Purchase::with([
+                'supplier',
+                'items.type',
+            ])
             ->whereNotIn('id', function ($query) {
+
                 $query->select('purchase_id')
-                    ->from('shipment_items');
+                    ->from('shipment_purchases');
+
             })
             ->orderBy('purchase_date')
             ->get();
 
-        return view('shipments.create', compact('purchases'));
+        return view(
+            'shipments.create',
+            compact('purchases')
+        );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE
+    |--------------------------------------------------------------------------
+    */
 
     public function store(Request $request)
     {
-        $request->validate([
-            'shipment_date' => 'required|date',
-            'destination' => 'required|string|max:255',
-            'shipping_cost' => 'nullable|numeric|min:0',
-            'purchase_ids' => 'required|array|min:1'
+        $validated = $request->validate([
+
+            'shipment_date' => ['required', 'date'],
+
+            'destination' => ['required', 'string', 'max:255'],
+
+            'purchase_ids' => ['required', 'array', 'min:1'],
+
+            'purchase_ids.*' => ['exists:purchases,id'],
+
+            'note' => ['nullable', 'string'],
+
         ]);
 
-        DB::transaction(function () use ($request) {
-
-            $shipment = Shipment::create([
-
-                'shipment_number' =>
-                    'SHP-' . now()->format('YmdHis'),
-
-                'shipment_date' =>
-                    $request->shipment_date,
-
-                'destination' =>
-                    $request->destination,
-
-                'status' =>
-                    'Dalam Pengiriman',
-
-                'shipping_cost' =>
-                    $request->shipping_cost ?? 0,
-
-                'note' =>
-                    $request->note
-
-            ]);
-
-            foreach ($request->purchase_ids as $purchase) {
-
-                ShipmentItem::create([
-
-                    'shipment_id' => $shipment->id,
-
-                    'purchase_id' => $purchase
-
-                ]);
-
-            }
-
-        });
+        $shipment = $this->shipmentService
+            ->createShipment($validated);
 
         return redirect()
-            ->route('shipments.index')
-            ->with('success', 'Shipment berhasil dibuat.');
+            ->route('shipments.show', $shipment)
+            ->with(
+                'success',
+                'Shipment berhasil dibuat.'
+            );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW
+    |--------------------------------------------------------------------------
+    */
     public function show(Shipment $shipment)
-    {
-        $shipment->load('items.purchase.supplier');
+{
+    $shipment->load([
 
-        return view('shipments.show', compact('shipment'));
-    }
+        'items.type',
 
-    public function edit(Shipment $shipment)
-    {
-        abort(404);
-    }
+        'purchases.purchase.supplier',
 
-    public function update(Request $request, Shipment $shipment)
-    {
-        abort(404);
-    }
+        'purchases.purchase.items.type',
 
-    public function destroy(Shipment $shipment)
-    {
-        $shipment->delete();
+        'sales.items.type',
 
-        return redirect()
-            ->route('shipments.index')
-            ->with('success', 'Shipment berhasil dihapus.');
-    }
+    ]);
+
+    $summary = $this->shipmentService
+        ->summary($shipment);
+
+    $progressPerType = $this->shipmentService
+        ->progressPerType($shipment);
+
+    return view(
+        'shipments.show',
+        compact(
+            'shipment',
+            'summary',
+            'progressPerType'
+        )
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| EDIT
+|--------------------------------------------------------------------------
+*/
+
+public function edit(Shipment $shipment)
+{
+    $shipment->load([
+        'purchases',
+    ]);
+
+    $selectedPurchaseIds = $shipment->purchases
+        ->pluck('purchase_id')
+        ->toArray();
+
+    $purchases = Purchase::with([
+            'supplier',
+            'items.type',
+        ])
+        ->where(function ($query) use ($selectedPurchaseIds) {
+
+            $query->whereIn(
+                'id',
+                $selectedPurchaseIds
+            )
+
+            ->orWhereNotIn('id', function ($sub) {
+
+                $sub->select('purchase_id')
+                    ->from('shipment_purchases');
+
+            });
+
+        })
+        ->orderBy('purchase_date')
+        ->get();
+
+    return view(
+        'shipments.edit',
+        compact(
+            'shipment',
+            'purchases'
+        )
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE
+|--------------------------------------------------------------------------
+*/
+public function update(
+    Request $request,
+    Shipment $shipment
+)
+{
+    $validated = $request->validate([
+
+        'shipment_date' => ['required', 'date'],
+
+        'destination' => ['required', 'string', 'max:255'],
+
+        'purchase_ids' => ['required', 'array', 'min:1'],
+
+        'purchase_ids.*' => ['exists:purchases,id'],
+
+        'note' => ['nullable', 'string'],
+
+    ]);
+
+    $shipment = $this->shipmentService
+        ->updateShipment(
+            $shipment,
+            $validated
+        );
+
+    return redirect()
+        ->route(
+            'shipments.show',
+            $shipment
+        )
+        ->with(
+            'success',
+            'Shipment berhasil diperbarui.'
+        );
+}
+
+/*
+|--------------------------------------------------------------------------
+| DESTROY
+|--------------------------------------------------------------------------
+*/
+
+public function destroy(Shipment $shipment)
+{
+    $this->shipmentService
+        ->deleteShipment($shipment);
+
+    return redirect()
+        ->route('shipments.index')
+        ->with(
+            'success',
+            'Shipment berhasil dihapus.'
+        );
+}
 }

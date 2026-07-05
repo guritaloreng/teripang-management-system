@@ -17,17 +17,19 @@ class SaleItem extends Model
 
         'price',
 
-        'subtotal'
+        'subtotal',
+
+        'status',
 
     ];
 
     protected $casts = [
 
-        'weight'=>'decimal:2',
+        'weight' => 'decimal:2',
 
-        'price'=>'decimal:2',
+        'price' => 'decimal:2',
 
-        'subtotal'=>'decimal:2'
+        'subtotal' => 'decimal:2',
 
     ];
 
@@ -38,6 +40,19 @@ class SaleItem extends Model
 
     public function type(): BelongsTo
     {
-        return $this->belongsTo(SeaCucumberType::class,'sea_cucumber_type_id');
+        return $this->belongsTo(
+            SeaCucumberType::class,
+            'sea_cucumber_type_id'
+        );
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === 'Selesai';
+    }
+
+    public function isPartial(): bool
+    {
+        return $this->status === 'Terjual Sebagian';
     }
 }

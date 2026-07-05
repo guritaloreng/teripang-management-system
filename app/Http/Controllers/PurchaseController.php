@@ -1,52 +1,67 @@
-<?php
+    /*
+    |--------------------------------------------------------------------------
+    | EDIT
+    |--------------------------------------------------------------------------
+    */
 
-namespace App\Http\Controllers;
-
-use App\Models\Purchase;
-use App\Models\PurchaseItem;
-use App\Models\Supplier;
-use App\Models\SeaCucumberType;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-
-class PurchaseController extends Controller
-{
-    public function index()
+    public function edit(Purchase $purchase)
     {
-        $purchases = Purchase::with('supplier')
-            ->latest()
-            ->paginate(20);
+        $purchase->load(
+            'items'
+        );
 
-        return view('purchases.index', compact('purchases'));
+        $suppliers = Supplier::orderBy(
+            'name'
+        )->get();
+
+        $types = SeaCucumberType::orderBy(
+            'name'
+        )->get();
+
+        return view(
+
+            'purchases.edit',
+
+            compact(
+
+                'purchase',
+
+                'suppliers',
+
+                'types'
+
+            )
+
+        );
     }
+        /*
+    |--------------------------------------------------------------------------
+    | UPDATE
+    |--------------------------------------------------------------------------
+    */
 
-    public function create()
-    {
-        $suppliers = Supplier::orderBy('name')->get();
-
-        $types = SeaCucumberType::orderBy('name')->get();
-
-        return view('purchases.create', compact(
-            'suppliers',
-            'types'
-        ));
-    }
-
-    public function store(Request $request)
+    public function update(
+        Request $request,
+        Purchase $purchase
+    )
     {
         $request->validate([
+
             'purchase_date' => 'required|date',
+
             'supplier_id' => 'required|exists:suppliers,id',
-            'type_id' => 'required|array',
-            'purchase_weight' => 'required|array',
-            'price_per_kg' => 'required|array',
+
+            'type_id' => 'required|array|min:1',
+
+            'purchase_weight' => 'required|array|min:1',
+
+            'price_per_kg' => 'required|array|min:1',
+
         ]);
 
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request, $purchase) {
 
-            $purchase = Purchase::create([
-
-                'purchase_number' => 'PO-' . now()->format('YmdHis'),
+            $purchase->update([
 
                 'supplier_invoice' => $request->supplier_invoice,
 
@@ -54,17 +69,21 @@ class PurchaseController extends Controller
 
                 'supplier_id' => $request->supplier_id,
 
-                'grand_total' => 0,
-
-                'photo' => null,
-
-                'note' => $request->note
+                'note' => $request->note,
 
             ]);
 
+            /*
+            |--------------------------------------------------------------------------
+            | Delete Old Items
+            |--------------------------------------------------------------------------
+            */
+
+            $purchase->items()->delete();
+
             $grandTotal = 0;
 
-            foreach ($request->type_id as $i => $type) {
+            foreach ($request->type_id as $i => $typeId) {
 
                 $subtotal =
                     $request->purchase_weight[$i]
@@ -75,56 +94,78 @@ class PurchaseController extends Controller
 
                     'purchase_id' => $purchase->id,
 
-                    'sea_cucumber_type_id' => $type,
+                    'sea_cucumber_type_id' => $typeId,
 
                     'purchase_weight' => $request->purchase_weight[$i],
 
                     'price_per_kg' => $request->price_per_kg[$i],
 
-                    'subtotal' => $subtotal
+                    'subtotal' => $subtotal,
 
                 ]);
 
                 $grandTotal += $subtotal;
+
             }
 
             $purchase->update([
 
-                'grand_total' => $grandTotal
+                'grand_total' => $grandTotal,
 
             ]);
 
         });
 
         return redirect()
-            ->route('purchases.index')
-            ->with('success', 'Pembelian berhasil disimpan.');
-    }
 
-    public function show(Purchase $purchase)
-    {
-        $purchase->load([
-        'supplier',
-        'items.type'
-    ]);
+            ->route('purchases.show', $purchase)
 
-    return view('purchases.show', compact('purchase'));
-    }
+            ->with(
 
-    public function edit(Purchase $purchase)
-    {
-    }
+                'success',
 
-    public function update(Request $request, Purchase $purchase)
-    {
+                'Nota pembelian berhasil diperbarui.'
+
+            );
     }
+        /*
+    |--------------------------------------------------------------------------
+    | DELETE
+    |--------------------------------------------------------------------------
+    */
 
     public function destroy(Purchase $purchase)
     {
-        $purchase->delete();
+        DB::transaction(function () use ($purchase) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete Purchase Items
+            |--------------------------------------------------------------------------
+            */
+
+            $purchase->items()->delete();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete Purchase
+            |--------------------------------------------------------------------------
+            */
+
+            $purchase->delete();
+
+        });
 
         return redirect()
-            ->back()
-            ->with('success', 'Data berhasil dihapus.');
+
+            ->route('purchases.index')
+
+            ->with(
+
+                'success',
+
+                'Nota pembelian berhasil dihapus.'
+
+            );
     }
 }

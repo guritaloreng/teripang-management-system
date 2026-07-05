@@ -3,127 +3,251 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
-use App\Models\SaleItem;
 use App\Models\Shipment;
+use App\Services\SaleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
-    public function create(Shipment $shipment)
+    protected SaleService $saleService;
+
+    public function __construct(
+        SaleService $saleService
+    )
+    {
+        $this->saleService = $saleService;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | INDEX
+    |--------------------------------------------------------------------------
+    */
+
+    public function index()
+    {
+        $sales = Sale::with([
+
+            'shipment',
+
+            'items.type',
+
+        ])
+        ->latest()
+        ->paginate(20);
+
+        return view(
+            'sales.index',
+            compact('sales')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE
+    |--------------------------------------------------------------------------
+    */
+
+    public function create(
+        Shipment $shipment
+    )
     {
         $shipment->load([
-            'items.purchase.items.type',
-            'sales.items.type'
-        ]);
 
-        $types = [];
-
-        foreach ($shipment->items as $shipmentItem) {
-
-            foreach ($shipmentItem->purchase->items as $purchaseItem) {
-
-                $id = $purchaseItem->sea_cucumber_type_id;
-
-                if (!isset($types[$id])) {
-
-                    $types[$id] = [
-
-                        'id' => $id,
-
-                        'name' => $purchaseItem->type->name,
-
-                        'weight' => 0
-
-                    ];
-
-                }
-
-                $types[$id]['weight'] += $purchaseItem->weight;
-
-            }
-
-        }
-
-        return view('sales.create', [
-
-            'shipment' => $shipment,
-
-            'types' => $types
+            'items.type',
 
         ]);
+
+        $types = $shipment->items
+
+            ->map(function ($item) {
+
+                return [
+
+                    'id' => $item->sea_cucumber_type_id,
+
+                    'name' => $item->type->name,
+
+                    'status' => $item->status,
+
+                    'weight' => $item->weight,
+
+                ];
+
+            })
+
+            ->values();
+
+        return view(
+
+            'sales.create',
+
+            compact(
+
+                'shipment',
+
+                'types'
+
+            )
+
+        );
     }
 
-    public function store(Request $request, Shipment $shipment)
-    {
-        $request->validate([
+    /*
+    |--------------------------------------------------------------------------
+    | STORE
+    |--------------------------------------------------------------------------
+    */
+    public function store(
+    Request $request,
+    Shipment $shipment
+)
+{
+    $validated = $request->validate([
 
-            'invoice_number' => 'required',
+        'invoice_number' => [
+            'required',
+            'string',
+            'max:100',
+        ],
 
-            'buyer' => 'required',
+        'sale_date' => [
+            'required',
+            'date',
+        ],
 
-            'sale_date' => 'required|date',
+        'buyer' => [
+            'required',
+            'string',
+            'max:255',
+        ],
 
-            'type_id' => 'required|array',
+        'note' => [
+            'nullable',
+            'string',
+        ],
 
-            'weight' => 'required|array',
+        'type_id' => [
+            'required',
+            'array',
+            'min:1',
+        ],
 
-            'price' => 'required|array'
+        'type_id.*' => [
+            'required',
+            'exists:sea_cucumber_types,id',
+        ],
 
-        ]);
+        'weight' => [
+            'required',
+            'array',
+        ],
 
-        DB::transaction(function () use ($request, $shipment) {
+        'weight.*' => [
+            'required',
+            'numeric',
+            'min:0.01',
+        ],
 
-            $sale = Sale::create([
+        'price' => [
+            'required',
+            'array',
+        ],
 
-                'shipment_id' => $shipment->id,
+        'price.*' => [
+            'required',
+            'numeric',
+            'min:0',
+        ],
 
-                'invoice_number' => $request->invoice_number,
+        'status' => [
+            'required',
+            'array',
+        ],
 
-                'buyer' => $request->buyer,
+        'status.*' => [
+            'required',
+            'in:Terjual Sebagian,Selesai',
+        ],
 
-                'sale_date' => $request->sale_date,
+    ]);
 
-                'note' => $request->note
+    $sale = $this->saleService->createSale(
+        $shipment,
+        $validated
+    );
 
-            ]);
+    return redirect()
+        ->route(
+            'sales.show',
+            $sale
+        )
+        ->with(
+            'success',
+            'Nota penjualan berhasil disimpan.'
+        );
+}
 
-            foreach ($request->type_id as $i => $type) {
+/*
+|--------------------------------------------------------------------------
+| SHOW
+|--------------------------------------------------------------------------
+*/
+/*
+|--------------------------------------------------------------------------
+| SHOW
+|--------------------------------------------------------------------------
+*/
 
-                if (($request->weight[$i] ?? 0) <= 0) {
-                    continue;
-                }
+public function show(Sale $sale)
+{
+    $sale->load([
 
-                SaleItem::create([
+        'shipment',
 
-                    'sale_id' => $sale->id,
+        'items.type',
 
-                    'sea_cucumber_type_id' => $type,
+    ]);
 
-                    'weight' => $request->weight[$i],
+    $grandTotal = $this->saleService
+        ->grandTotal($sale);
 
-                    'price' => $request->price[$i],
+    return view(
+        'sales.show',
+        compact(
+            'sale',
+            'grandTotal'
+        )
+    );
+}
 
-                    'subtotal' =>
-                        $request->weight[$i] *
-                        $request->price[$i]
+/*
+|--------------------------------------------------------------------------
+| DESTROY
+|--------------------------------------------------------------------------
+*/
 
-                ]);
+public function destroy(Sale $sale)
+{
+    $shipment = $sale->shipment;
 
-            }
+    DB::transaction(function () use ($sale) {
 
-            if ($shipment->status == 'Belum Dijual') {
+        $sale->items()->delete();
 
-                $shipment->status = 'Terjual Sebagian';
+        $sale->delete();
 
-                $shipment->save();
+    });
 
-            }
+    $this->saleService
+        ->updateShipmentStatus($shipment);
 
-        });
-
-        return redirect()
-            ->route('shipments.show', $shipment)
-            ->with('success', 'Penjualan berhasil disimpan.');
-    }
+    return redirect()
+        ->route('sales.index')
+        ->with(
+            'success',
+            'Nota penjualan berhasil dihapus.'
+        );
+}
 }
