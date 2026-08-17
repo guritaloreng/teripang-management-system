@@ -14,9 +14,9 @@
 
 <div>
 
-<h1>👨 Supplier / 供应商</h1>
+<h1>Supplier / 供应商</h1>
 
-<p>Master Supplier Teripang</p>
+<p>Master Supplier Teripang / 海参供应商主数据</p>
 
 </div>
 
@@ -25,7 +25,7 @@
 <a href="{{ route('suppliers.create') }}"
 style="background:#2c7be5;color:white;padding:12px 20px;text-decoration:none;border-radius:6px;">
 
-➕ Tambah Supplier
+Tambah Supplier / 新增供应商
 
 </a>
 
@@ -41,15 +41,15 @@ style="background:#2c7be5;color:white;padding:12px 20px;text-decoration:none;bor
 
 <th width="5%">No</th>
 
-<th>Nama Supplier</th>
+<th>Nama Supplier / 供应商名称</th>
 
-<th>Daerah</th>
+<th>Daerah / 地区</th>
 
-<th>Telepon</th>
+<th>Telepon / 电话</th>
 
-<th>Catatan</th>
+<th>Catatan / 备注</th>
 
-<th width="15%">Aksi</th>
+<th width="15%">Aksi / 操作</th>
 
 </tr>
 
@@ -73,7 +73,7 @@ style="background:#2c7be5;color:white;padding:12px 20px;text-decoration:none;bor
 
 <td style="white-space: nowrap;">
 
-    <a href="{{ route('suppliers.edit', $supplier->id) }}">✏️</a>
+    <a href="{{ route('suppliers.edit', $supplier->id) }}">Edit / 编辑</a>
 
     <form action="{{ route('suppliers.destroy', $supplier->id) }}"
           method="POST"
@@ -86,7 +86,7 @@ style="background:#2c7be5;color:white;padding:12px 20px;text-decoration:none;bor
                 onclick="return confirm('Yakin hapus supplier ini?')"
                 style="border:none;background:none;cursor:pointer;padding:0;">
 
-            🗑️
+            Hapus / 删除
 
         </button>
 
@@ -102,7 +102,7 @@ style="background:#2c7be5;color:white;padding:12px 20px;text-decoration:none;bor
 
 <td colspan="6" align="center">
 
-Belum ada supplier
+Belum ada supplier / 暂无供应商
 
 </td>
 

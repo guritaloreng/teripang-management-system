@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
-use App\Models\Shipment;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;
 
@@ -26,8 +25,7 @@ class ExpenseController extends Controller
 
     public function index()
     {
-        $expenses = Expense::with('shipment')
-            ->latest('expense_date')
+        $expenses = Expense::latest('expense_date')
             ->paginate(20);
 
         return view(
@@ -44,14 +42,17 @@ class ExpenseController extends Controller
 
     public function create()
     {
-        $shipments = Shipment::orderByDesc('shipment_date')
-            ->get();
-
         return view(
-            'expenses.create',
-            compact('shipments')
+            'expenses.create'
         );
     }
+
+    public function show(Expense $expense)
+    {
+        return redirect()
+            ->route('expenses.index');
+    }
+
         /*
     |--------------------------------------------------------------------------
     | STORE
@@ -63,8 +64,6 @@ class ExpenseController extends Controller
         $validated = $request->validate([
 
             'expense_date' => ['required', 'date'],
-
-            'shipment_id' => ['nullable', 'exists:shipments,id'],
 
             'expense_name' => ['required', 'string', 'max:255'],
 
@@ -95,15 +94,9 @@ class ExpenseController extends Controller
 
     public function edit(Expense $expense)
     {
-        $shipments = Shipment::orderByDesc('shipment_date')
-            ->get();
-
         return view(
             'expenses.edit',
-            compact(
-                'expense',
-                'shipments'
-            )
+            compact('expense')
         );
     }
         /*
@@ -120,8 +113,6 @@ class ExpenseController extends Controller
         $validated = $request->validate([
 
             'expense_date' => ['required', 'date'],
-
-            'shipment_id' => ['nullable', 'exists:shipments,id'],
 
             'expense_name' => ['required', 'string', 'max:255'],
 

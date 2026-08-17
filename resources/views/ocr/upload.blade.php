@@ -4,46 +4,46 @@
 
 <div class="container">
 
-<h2 class="mb-4">
+    <h2 class="mb-4">
 
-📷 OCR Nota Pembelian / OCR采购单
+        OCR Nota Pembelian / OCR 采购单
 
-</h2>
+    </h2>
 
-<div class="card">
+    <div class="card">
 
-<div class="card-body">
+        <div class="card-body">
 
-<form
-method="POST"
-action="{{ route('ocr.upload') }}"
-enctype="multipart/form-data">
+            <form
+                method="POST"
+                action="{{ route('ocr.upload') }}"
+                enctype="multipart/form-data">
 
-@csrf
+                @csrf
 
-<div class="mb-3">
+                <div class="mb-3">
 
-<label>Upload Foto Nota</label>
+                    <label class="form-label">Upload Foto Nota</label>
 
-<input
-type="file"
-name="photo"
-class="form-control"
-required>
+                    <input
+                        type="file"
+                        name="photo"
+                        class="form-control"
+                        required>
 
-</div>
+                </div>
 
-<button class="btn btn-success">
+                <button class="btn btn-success">
 
-📷 Upload & Scan
+                    Upload & Scan
 
-</button>
+                </button>
 
-</form>
+            </form>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 </div>
 

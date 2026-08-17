@@ -13,8 +13,9 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('shipment_id')
+                ->nullable()
                 ->constrained()
-                ->cascadeOnDelete();
+                ->nullOnDelete();
 
             $table->string('invoice_number')->unique();
 

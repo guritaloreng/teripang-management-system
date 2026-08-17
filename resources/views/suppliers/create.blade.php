@@ -8,27 +8,27 @@
 
     @csrf
 
-    <p>Nama Supplier</p>
+    <p>Nama Supplier / 供应商名称</p>
     <input type="text" name="name">
 
     <br><br>
 
-    <p>Daerah</p>
+    <p>Daerah / 地区</p>
     <input type="text" name="region">
 
     <br><br>
 
-    <p>Telepon</p>
+    <p>Telepon / 电话</p>
     <input type="text" name="phone">
 
     <br><br>
 
-    <p>Catatan</p>
+    <p>Catatan / 备注</p>
     <textarea name="note"></textarea>
 
     <br><br>
 
-    <button type="submit">Simpan</button>
+    <button type="submit">Simpan / 保存</button>
 
 </form>
 

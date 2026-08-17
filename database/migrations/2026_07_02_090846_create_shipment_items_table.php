@@ -22,6 +22,10 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
+            $table->foreignId('purchase_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->foreignId('sea_cucumber_type_id')
                 ->constrained();
 

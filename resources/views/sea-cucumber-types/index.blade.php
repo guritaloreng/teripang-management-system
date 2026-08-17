@@ -6,16 +6,16 @@
 
     <div>
 
-        <h2>🐚 Jenis Teripang</h2>
+        <h2>Jenis Teripang / 海参种类</h2>
 
-        <small>Master Data Jenis Teripang</small>
+        <small>Master Data Jenis Teripang / 海参种类主数据</small>
 
     </div>
 
     <a href="{{ route('sea-cucumber-types.create') }}"
        class="btn btn-primary">
 
-        + Tambah Jenis
+        Tambah Jenis / 新增种类
 
     </a>
 
@@ -39,9 +39,9 @@
 
             <th width="60">No</th>
 
-            <th>Nama Jenis</th>
+            <th>Nama Jenis / 种类名称</th>
 
-            <th width="150">Aksi</th>
+            <th width="150">Aksi / 操作</th>
 
         </tr>
 
@@ -62,7 +62,7 @@
                 <a href="{{ route('sea-cucumber-types.edit',$type) }}"
                    class="btn btn-warning btn-sm">
 
-                    Edit
+                    Edit / 编辑
 
                 </a>
 
@@ -75,10 +75,10 @@
                     @method('DELETE')
 
                     <button
-                        onclick="return confirm('Hapus?')"
+                        onclick="return confirm('Hapus? / 删除？')"
                         class="btn btn-danger btn-sm">
 
-                        Hapus
+                        Hapus / 删除
 
                     </button>
 
@@ -94,7 +94,7 @@
 
             <td colspan="3" class="text-center">
 
-                Belum ada data
+                Belum ada data / 暂无数据
 
             </td>
 

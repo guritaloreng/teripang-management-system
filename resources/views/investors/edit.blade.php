@@ -4,7 +4,7 @@
 
 <h2 class="mb-4">
 
-✏ Edit Investor / 编辑投资人
+Edit Investor / 编辑投资人
 
 </h2>
 
@@ -21,7 +21,7 @@ action="{{ route('investors.update',$investor) }}">
 
 <div class="mb-3">
 
-<label>Nama Investor</label>
+<label>Nama Investor / 投资人姓名</label>
 
 <input
 type="text"
@@ -34,7 +34,7 @@ required>
 
 <div class="mb-3">
 
-<label>No HP</label>
+<label>No HP / 手机号</label>
 
 <input
 type="text"
@@ -46,7 +46,7 @@ class="form-control">
 
 <div class="mb-3">
 
-<label>Catatan</label>
+<label>Catatan / 备注</label>
 
 <textarea
 name="note"
@@ -57,7 +57,7 @@ class="form-control">{{ $investor->note }}</textarea>
 
 <button class="btn btn-primary">
 
-💾 Update
+Update / 更新
 
 </button>
 
@@ -65,7 +65,7 @@ class="form-control">{{ $investor->note }}</textarea>
 href="{{ route('investors.index') }}"
 class="btn btn-secondary">
 
-Batal
+Batal / 取消
 
 </a>
 

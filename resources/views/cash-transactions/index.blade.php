@@ -8,11 +8,11 @@
 
         <div>
 
-            <h2>💵 Buku Kas</h2>
+            <h2>Buku Kas / 现金簿</h2>
 
             <small class="text-muted">
 
-                Riwayat seluruh transaksi kas perusahaan
+                Riwayat seluruh transaksi kas perusahaan / 公司现金交易记录
 
             </small>
 
@@ -20,15 +20,15 @@
 
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-4 g-3">
 
         <div class="col-md-3">
 
-            <div class="card">
+            <div class="card h-100">
 
                 <div class="card-body">
 
-                    <small>Total Kas Masuk</small>
+                    <small>Total Kas Masuk / 现金收入总额</small>
 
                     <h4 class="text-success">
 
@@ -44,11 +44,11 @@
 
         <div class="col-md-3">
 
-            <div class="card">
+            <div class="card h-100">
 
                 <div class="card-body">
 
-                    <small>Total Kas Keluar</small>
+                    <small>Total Kas Keluar / 现金支出总额</small>
 
                     <h4 class="text-danger">
 
@@ -61,13 +61,14 @@
             </div>
 
         </div>
-                <div class="col-md-3">
 
-            <div class="card">
+        <div class="col-md-3">
+
+            <div class="card h-100">
 
                 <div class="card-body">
 
-                    <small>Saldo Akhir</small>
+                    <small>Saldo Akhir / 期末余额</small>
 
                     <h4 class="text-primary">
 
@@ -83,11 +84,11 @@
 
         <div class="col-md-3">
 
-            <div class="card">
+            <div class="card h-100">
 
                 <div class="card-body">
 
-                    <small>Total Transaksi</small>
+                    <small>Total Transaksi / 交易总数</small>
 
                     <h4>
 
@@ -110,14 +111,13 @@
             <form method="GET"
                   action="{{ route('cash-book.index') }}">
 
-                <div class="row">
+                <div class="row g-3">
 
                     <div class="col-md-4">
 
                         <label class="form-label">
 
-                            Dari Tanggal
-
+                            Dari Tanggal / 开始日期
                         </label>
 
                         <input
@@ -132,7 +132,7 @@
 
                         <label class="form-label">
 
-                            Sampai Tanggal
+                            Sampai Tanggal / 结束日期
 
                         </label>
 
@@ -150,7 +150,7 @@
                             type="submit"
                             class="btn btn-primary">
 
-                            Tampilkan
+                            Tampilkan / 显示
 
                         </button>
 
@@ -168,8 +168,7 @@
 
         <div class="card-header bg-dark text-white">
 
-            Buku Kas
-
+            Buku Kas / 现金簿
         </div>
 
         <div class="table-responsive">
@@ -180,24 +179,24 @@
 
                     <tr>
 
-                        <th>Tanggal</th>
+                        <th>Tanggal / 日期</th>
 
-                        <th>Jenis</th>
+                        <th>Jenis / 类型</th>
 
-                        <th>Keterangan</th>
+                        <th>Keterangan / 说明</th>
 
-                        <th class="text-end">Kas Masuk</th>
+                        <th class="text-end">Kas Masuk / 现金收入</th>
 
-                        <th class="text-end">Kas Keluar</th>
+                        <th class="text-end">Kas Keluar / 现金支出</th>
 
-                        <th class="text-end">Saldo</th>
+                        <th class="text-end">Saldo / 余额</th>
 
                     </tr>
 
                 </thead>
 
                 <tbody>
-                                    @forelse($transactions as $transaction)
+                    @forelse($transactions as $transaction)
 
                     <tr>
 
@@ -222,6 +221,7 @@
                                     <a href="{{ route('purchases.show', $transaction->reference_id) }}">
                                         {{ $transaction->description }}
                                     </a>
+
                                     @break
 
                                 @case('sale')
@@ -229,11 +229,7 @@
                                     <a href="{{ route('sales.show', $transaction->reference_id) }}">
                                         {{ $transaction->description }}
                                     </a>
-                                    @break
 
-                                @case('expense')
-
-                                    {{ $transaction->description }}
                                     @break
 
                                 @default
@@ -272,7 +268,7 @@
 
                         </td>
 
-                        <td class="text-end fw-bold">
+                        <td class="text-end">
 
                             Rp {{ number_format($transaction->running_balance,0,',','.') }}
 
@@ -284,16 +280,16 @@
 
                     <tr>
 
-                        <td colspan="6" class="text-center py-4">
+                        <td colspan="6"
+                            class="text-center">
 
-                            Belum ada transaksi kas.
+                            Belum ada transaksi kas. / 暂无现金交易。
 
                         </td>
 
                     </tr>
 
                 @endforelse
-
                 </tbody>
 
             </table>

@@ -28,6 +28,11 @@ return new class extends Migration
             $table->foreignId('sea_cucumber_type_id')
                 ->constrained();
 
+            $table->foreignId('shipment_item_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
             /*
             |--------------------------------------------------------------------------
             | Transaction
@@ -52,7 +57,7 @@ return new class extends Migration
 
                 'Selesai',
 
-            ]);
+            ])->default('Terjual Sebagian');
 
             $table->timestamps();
 

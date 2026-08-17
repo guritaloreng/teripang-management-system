@@ -3,39 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
-use App\Models\Shipment;
+use App\Models\SeaCucumberType;
 use App\Services\SaleService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class SaleController extends Controller
 {
-    protected SaleService $saleService;
-
     public function __construct(
-        SaleService $saleService
-    )
-    {
-        $this->saleService = $saleService;
+        protected SaleService $saleService
+    ) {
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | INDEX
-    |--------------------------------------------------------------------------
-    */
 
     public function index()
     {
         $sales = Sale::with([
-
-            'shipment',
-
-            'items.type',
-
-        ])
-        ->latest()
-        ->paginate(20);
+                'items.type',
+            ])
+            ->latest()
+            ->paginate(20);
 
         return view(
             'sales.index',
@@ -43,211 +30,222 @@ class SaleController extends Controller
         );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | CREATE
-    |--------------------------------------------------------------------------
-    */
-
-    public function create(
-        Shipment $shipment
-    )
+    public function create()
     {
-        $shipment->load([
-
-            'items.type',
-
-        ]);
-
-        $types = $shipment->items
-
-            ->map(function ($item) {
-
-                return [
-
-                    'id' => $item->sea_cucumber_type_id,
-
-                    'name' => $item->type->name,
-
-                    'status' => $item->status,
-
-                    'weight' => $item->weight,
-
-                ];
-
-            })
-
-            ->values();
+        $types = SeaCucumberType::orderBy('name')
+            ->get();
 
         return view(
-
             'sales.create',
-
-            compact(
-
-                'shipment',
-
-                'types'
-
-            )
-
+            compact('types')
         );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | STORE
-    |--------------------------------------------------------------------------
-    */
-    public function store(
-    Request $request,
-    Shipment $shipment
-)
-{
-    $validated = $request->validate([
+    public function store(Request $request)
+    {
+        $validated = $this->validateSaleRequest($request);
 
-        'invoice_number' => [
-            'required',
-            'string',
-            'max:100',
-        ],
+        $sale = $this->saleService
+            ->createSale($validated);
 
-        'sale_date' => [
-            'required',
-            'date',
-        ],
+        return redirect()
+            ->route('sales.show', $sale)
+            ->with(
+                'success',
+                'Nota penjualan berhasil disimpan.'
+            );
+    }
 
-        'buyer' => [
-            'required',
-            'string',
-            'max:255',
-        ],
+    public function edit(Sale $sale)
+    {
+        $sale->load('items.type');
 
-        'note' => [
-            'nullable',
-            'string',
-        ],
+        $types = SeaCucumberType::orderBy('name')
+            ->get();
 
-        'type_id' => [
-            'required',
-            'array',
-            'min:1',
-        ],
+        return view(
+            'sales.edit',
+            compact(
+                'sale',
+                'types'
+            )
+        );
+    }
 
-        'type_id.*' => [
-            'required',
-            'exists:sea_cucumber_types,id',
-        ],
-
-        'weight' => [
-            'required',
-            'array',
-        ],
-
-        'weight.*' => [
-            'required',
-            'numeric',
-            'min:0.01',
-        ],
-
-        'price' => [
-            'required',
-            'array',
-        ],
-
-        'price.*' => [
-            'required',
-            'numeric',
-            'min:0',
-        ],
-
-        'status' => [
-            'required',
-            'array',
-        ],
-
-        'status.*' => [
-            'required',
-            'in:Terjual Sebagian,Selesai',
-        ],
-
-    ]);
-
-    $sale = $this->saleService->createSale(
-        $shipment,
-        $validated
-    );
-
-    return redirect()
-        ->route(
-            'sales.show',
+    public function update(
+        Request $request,
+        Sale $sale
+    ) {
+        $validated = $this->validateSaleRequest(
+            $request,
             $sale
-        )
-        ->with(
-            'success',
-            'Nota penjualan berhasil disimpan.'
         );
-}
 
-/*
-|--------------------------------------------------------------------------
-| SHOW
-|--------------------------------------------------------------------------
-*/
-/*
-|--------------------------------------------------------------------------
-| SHOW
-|--------------------------------------------------------------------------
-*/
+        $sale = $this->saleService
+            ->updateSale(
+                $sale,
+                $validated
+            );
 
-public function show(Sale $sale)
-{
-    $sale->load([
+        return redirect()
+            ->route('sales.show', $sale)
+            ->with(
+                'success',
+                'Nota penjualan berhasil diperbarui.'
+            );
+    }
 
-        'shipment',
+    public function show(Sale $sale)
+    {
+        $sale->load('items.type');
 
-        'items.type',
+        $grandTotal = $this->saleService
+            ->grandTotal($sale);
 
-    ]);
-
-    $grandTotal = $this->saleService
-        ->grandTotal($sale);
-
-    return view(
-        'sales.show',
-        compact(
-            'sale',
-            'grandTotal'
-        )
-    );
-}
-
-/*
-|--------------------------------------------------------------------------
-| DESTROY
-|--------------------------------------------------------------------------
-*/
-
-public function destroy(Sale $sale)
-{
-    $shipment = $sale->shipment;
-
-    DB::transaction(function () use ($sale) {
-
-        $sale->items()->delete();
-
-        $sale->delete();
-
-    });
-
-    $this->saleService
-        ->updateShipmentStatus($shipment);
-
-    return redirect()
-        ->route('sales.index')
-        ->with(
-            'success',
-            'Nota penjualan berhasil dihapus.'
+        return view(
+            'sales.show',
+            compact(
+                'sale',
+                'grandTotal'
+            )
         );
-}
+    }
+
+    public function destroy(Sale $sale)
+    {
+        $this->saleService
+            ->deleteSale($sale);
+
+        return redirect()
+            ->route('sales.index')
+            ->with(
+                'success',
+                'Nota penjualan berhasil dihapus.'
+            );
+    }
+
+    protected function validateSaleRequest(
+        Request $request,
+        ?Sale $sale = null
+    ): array {
+        $invoiceNumberRule = Rule::unique(
+            'sales',
+            'invoice_number'
+        );
+
+        if ($sale) {
+
+            $invoiceNumberRule->ignore($sale->id);
+
+        }
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'invoice_number' => [
+                    'required',
+                    'string',
+                    'max:100',
+                    $invoiceNumberRule,
+                ],
+
+                'sale_date' => [
+                    'required',
+                    'date',
+                ],
+
+                'buyer' => [
+                    'required',
+                    'string',
+                    'max:255',
+                ],
+
+                'note' => [
+                    'nullable',
+                    'string',
+                ],
+
+                'type_id' => [
+                    'required',
+                    'array',
+                    'min:1',
+                ],
+
+                'type_id.*' => [
+                    'required',
+                    'exists:sea_cucumber_types,id',
+                ],
+
+                'weight' => [
+                    'required',
+                    'array',
+                    'min:1',
+                ],
+
+                'weight.*' => [
+                    'required',
+                    'numeric',
+                    'min:0.01',
+                ],
+
+                'price' => [
+                    'required',
+                    'array',
+                    'min:1',
+                ],
+
+                'price.*' => [
+                    'required',
+                    'numeric',
+                    'min:0',
+                ],
+
+                'status' => [
+                    'required',
+                    'array',
+                    'min:1',
+                ],
+
+                'status.*' => [
+                    'required',
+                    'in:Terjual Sebagian,Selesai',
+                ],
+            ]
+        );
+
+        $validator->after(function ($validator) use ($request) {
+
+            $typeIds = $request->input('type_id', []);
+
+            $rowKeys = is_array($typeIds)
+                ? array_keys($typeIds)
+                : [];
+
+            foreach ([
+                'weight',
+                'price',
+                'status',
+            ] as $field) {
+
+                $values = $request->input($field, []);
+
+                $fieldKeys = is_array($values)
+                    ? array_keys($values)
+                    : [];
+
+                if ($fieldKeys !== $rowKeys) {
+
+                    $validator->errors()->add(
+                        $field,
+                        'Jumlah data item penjualan tidak konsisten.'
+                    );
+
+                }
+
+            }
+
+        });
+
+        return $validator->validate();
+    }
 }

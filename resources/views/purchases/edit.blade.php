@@ -2,47 +2,67 @@
 
 @section('content')
 
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+
 <div class="container-fluid">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
 
-            <h2>✏️ Edit Nota Pembelian</h2>
+            <h2>Edit Nota Pembelian / 编辑采购单</h2>
 
             <small class="text-muted">
 
-                Perbarui data nota pembelian
+                Perbarui data nota pembelian / 更新采购单资料
 
             </small>
 
         </div>
 
-        <a href="{{ route('purchases.show',$purchase) }}"
-           class="btn btn-secondary">
+        <a
+            href="{{ route('purchases.show', $purchase) }}"
+            class="btn btn-secondary">
 
-            ← Kembali
+            Kembali / 返回
 
         </a>
 
     </div>
 
+    @if($errors->any())
+
+        <div class="alert alert-danger">
+
+            <ul class="mb-0">
+
+                @foreach($errors->all() as $error)
+
+                    <li>{{ $error }}</li>
+
+                @endforeach
+
+            </ul>
+
+        </div>
+
+    @endif
+
     <div class="card">
 
         <div class="card-header bg-warning">
 
-            Form Edit Pembelian
+            Form Edit Pembelian / 编辑采购表单
 
         </div>
 
         <div class="card-body">
 
             <form
-                action="{{ route('purchases.update',$purchase) }}"
+                action="{{ route('purchases.update', $purchase) }}"
                 method="POST">
 
                 @csrf
-
                 @method('PUT')
 
                 <div class="row">
@@ -51,7 +71,7 @@
 
                         <label class="form-label">
 
-                            Tanggal Pembelian
+                            Tanggal Pembelian / 采购日期
 
                         </label>
 
@@ -59,7 +79,7 @@
                             type="date"
                             name="purchase_date"
                             class="form-control"
-                            value="{{ old('purchase_date',$purchase->purchase_date->format('Y-m-d')) }}"
+                            value="{{ old('purchase_date', $purchase->purchase_date->format('Y-m-d')) }}"
                             required>
 
                     </div>
@@ -68,7 +88,7 @@
 
                         <label class="form-label">
 
-                            Supplier
+                            Supplier / 供应商
 
                         </label>
 
@@ -81,7 +101,7 @@
 
                                 <option
                                     value="{{ $supplier->id }}"
-                                    @selected(old('supplier_id',$purchase->supplier_id)==$supplier->id)>
+                                    @selected((string) old('supplier_id', $purchase->supplier_id) === (string) $supplier->id)>
 
                                     {{ $supplier->name }}
 
@@ -92,11 +112,12 @@
                         </select>
 
                     </div>
-                                        <div class="col-md-6 mb-3">
+
+                    <div class="col-md-6 mb-3">
 
                         <label class="form-label">
 
-                            No. Invoice Supplier
+                            No. Invoice Supplier / 供应商单据号
 
                         </label>
 
@@ -104,7 +125,7 @@
                             type="text"
                             name="supplier_invoice"
                             class="form-control"
-                            value="{{ old('supplier_invoice',$purchase->supplier_invoice) }}">
+                            value="{{ old('supplier_invoice', $purchase->supplier_invoice) }}">
 
                     </div>
 
@@ -112,7 +133,7 @@
 
                         <label class="form-label">
 
-                            Catatan
+                            Catatan / 备注
 
                         </label>
 
@@ -120,7 +141,7 @@
                             type="text"
                             name="note"
                             class="form-control"
-                            value="{{ old('note',$purchase->note) }}">
+                            value="{{ old('note', $purchase->note) }}">
 
                     </div>
 
@@ -128,7 +149,7 @@
 
                         <hr>
 
-                        <h5>Item Pembelian</h5>
+                        <h5>Item Pembelian / 采购项目</h5>
 
                     </div>
 
@@ -138,11 +159,11 @@
 
                             <tr>
 
-                                <th>Jenis Teripang</th>
+                                <th>Jenis Teripang / 海参种类</th>
 
-                                <th width="180">Berat (Kg)</th>
+                                <th width="180">Berat (Kg) / 重量</th>
 
-                                <th width="180">Harga / Kg</th>
+                                <th width="180">Harga / Kg / 单价</th>
 
                             </tr>
 
@@ -150,7 +171,7 @@
 
                         <tbody>
 
-                            @foreach($purchase->items as $item)
+                            @foreach($purchase->items as $index => $item)
 
                                 <tr>
 
@@ -158,14 +179,14 @@
 
                                         <select
                                             name="type_id[]"
-                                            class="form-select"
+                                            class="form-select searchable-type"
                                             required>
 
                                             @foreach($types as $type)
 
                                                 <option
                                                     value="{{ $type->id }}"
-                                                    @selected($item->sea_cucumber_type_id==$type->id)>
+                                                    @selected((string) old('type_id.' . $index, $item->sea_cucumber_type_id) === (string) $type->id)>
 
                                                     {{ $type->name }}
 
@@ -184,7 +205,7 @@
                                             step="0.01"
                                             name="purchase_weight[]"
                                             class="form-control"
-                                            value="{{ $item->purchase_weight }}"
+                                            value="{{ old('purchase_weight.' . $index, $item->purchase_weight) }}"
                                             required>
 
                                     </td>
@@ -196,7 +217,7 @@
                                             step="0.01"
                                             name="price_per_kg[]"
                                             class="form-control"
-                                            value="{{ $item->price_per_kg }}"
+                                            value="{{ old('price_per_kg.' . $index, $item->price_per_kg) }}"
                                             required>
 
                                     </td>
@@ -208,22 +229,26 @@
                         </tbody>
 
                     </table>
-                                    <div class="d-flex justify-content-end">
 
-                    <a href="{{ route('purchases.show',$purchase) }}"
-                       class="btn btn-secondary me-2">
+                    <div class="d-flex justify-content-end">
 
-                        Batal
+                        <a
+                            href="{{ route('purchases.show', $purchase) }}"
+                            class="btn btn-secondary me-2">
 
-                    </a>
+                            Batal / 取消
 
-                    <button
-                        type="submit"
-                        class="btn btn-warning">
+                        </a>
 
-                        💾 Update Nota Pembelian
+                        <button
+                            type="submit"
+                            class="btn btn-warning">
 
-                    </button>
+                            Update Nota Pembelian / 更新采购单
+
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -234,5 +259,25 @@
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+
+document.querySelectorAll(".searchable-type").forEach(select => {
+
+    new TomSelect(select, {
+        create: false,
+        maxItems: 1,
+        searchField: ["text"],
+        sortField: {
+            field: "text",
+            direction: "asc"
+        }
+    });
+
+});
+
+</script>
 
 @endsection

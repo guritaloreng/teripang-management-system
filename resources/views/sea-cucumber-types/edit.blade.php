@@ -2,7 +2,7 @@
 
 @section('content')
 
-<h2>Edit Jenis Teripang</h2>
+<h2>Edit Jenis Teripang / 编辑海参种类</h2>
 
 <form method="POST"
       action="{{ route('sea-cucumber-types.update',$seaCucumberType) }}">
@@ -12,7 +12,7 @@
 
     <div class="mb-3">
 
-        <label>Nama Jenis</label>
+        <label>Nama Jenis / 种类名称</label>
 
         <input
             type="text"
@@ -25,7 +25,7 @@
 
     <button class="btn btn-primary">
 
-        Update
+        Update / 更新
 
     </button>
 

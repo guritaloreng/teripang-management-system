@@ -13,6 +13,8 @@ class SaleItem extends Model
 
         'sea_cucumber_type_id',
 
+        'shipment_item_id',
+
         'weight',
 
         'price',
@@ -44,6 +46,11 @@ class SaleItem extends Model
             SeaCucumberType::class,
             'sea_cucumber_type_id'
         );
+    }
+
+    public function shipmentItem(): BelongsTo
+    {
+        return $this->belongsTo(ShipmentItem::class);
     }
 
     public function isCompleted(): bool

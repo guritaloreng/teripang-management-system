@@ -6,15 +6,15 @@
 
     <div>
 
-        <h2>💰 Investor / 投资人</h2>
+        <h2>Investor / 投资人</h2>
 
-        <small>Master Data Investor</small>
+        <small>Master Data Investor / 投资人主数据</small>
 
     </div>
 
     <a href="{{ route('investors.create') }}" class="btn btn-primary">
 
-        ➕ Tambah Investor
+        Tambah Investor / 新增投资人
 
     </a>
 
@@ -42,13 +42,13 @@
 
 <th width="60">No</th>
 
-<th>Nama Investor</th>
+<th>Nama Investor / 投资人姓名</th>
 
-<th>No HP</th>
+<th>No HP / 手机号</th>
 
-<th>Catatan</th>
+<th>Catatan / 备注</th>
 
-<th width="170">Aksi</th>
+<th width="170">Aksi / 操作</th>
 
 </tr>
 
@@ -74,7 +74,7 @@
 href="{{ route('investors.edit',$investor) }}"
 class="btn btn-warning btn-sm">
 
-✏ Edit
+Edit / 编辑
 
 </a>
 
@@ -87,10 +87,10 @@ style="display:inline;">
 @method('DELETE')
 
 <button
-onclick="return confirm('Hapus investor?')"
+onclick="return confirm('Hapus investor? / 删除投资人？')"
 class="btn btn-danger btn-sm">
 
-🗑
+Hapus / 删除
 
 </button>
 
@@ -106,7 +106,7 @@ class="btn btn-danger btn-sm">
 
 <td colspan="5" class="text-center">
 
-Belum ada data investor.
+Belum ada data investor. / 暂无投资人数据。
 
 </td>
 

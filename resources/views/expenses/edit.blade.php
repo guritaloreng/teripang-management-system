@@ -8,11 +8,11 @@
 
         <div>
 
-            <h2>✏️ Edit Pengeluaran</h2>
+            <h2>Edit Pengeluaran / 编辑支出</h2>
 
             <small class="text-muted">
 
-                Perbarui data pengeluaran
+                Perbarui data pengeluaran / 更新支出资料
 
             </small>
 
@@ -21,7 +21,7 @@
         <a href="{{ route('expenses.index') }}"
            class="btn btn-secondary">
 
-            ← Kembali
+            Kembali / 返回
 
         </a>
 
@@ -31,7 +31,7 @@
 
         <div class="card-header bg-warning">
 
-            Form Edit Pengeluaran
+            Form Edit Pengeluaran / 编辑支出表单
 
         </div>
 
@@ -49,11 +49,7 @@
 
                     <div class="col-md-6 mb-3">
 
-                        <label class="form-label">
-
-                            Tanggal
-
-                        </label>
+                        <label class="form-label">Tanggal / 日期</label>
 
                         <input
                             type="date"
@@ -66,44 +62,7 @@
 
                     <div class="col-md-6 mb-3">
 
-                        <label class="form-label">
-
-                            Shipment (Opsional)
-
-                        </label>
-
-                        <select
-                            name="shipment_id"
-                            class="form-select">
-
-                            <option value="">
-
-                                -- Pengeluaran Umum --
-
-                            </option>
-
-                            @foreach($shipments as $shipment)
-
-                                <option
-                                    value="{{ $shipment->id }}"
-                                    @selected(old('shipment_id',$expense->shipment_id)==$shipment->id)>
-
-                                    {{ $shipment->shipment_number }}
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-                                        <div class="col-md-6 mb-3">
-
-                        <label class="form-label">
-
-                            Nama Pengeluaran
-
-                        </label>
+                        <label class="form-label">Nama Pengeluaran / 支出名称</label>
 
                         <input
                             type="text"
@@ -116,11 +75,7 @@
 
                     <div class="col-md-6 mb-3">
 
-                        <label class="form-label">
-
-                            Nominal
-
-                        </label>
+                        <label class="form-label">Nominal / 金额</label>
 
                         <input
                             type="number"
@@ -133,13 +88,9 @@
 
                     </div>
 
-                    <div class="col-md-12 mb-3">
+                    <div class="col-md-6 mb-3">
 
-                        <label class="form-label">
-
-                            Keterangan
-
-                        </label>
+                        <label class="form-label">Keterangan / 说明</label>
 
                         <input
                             type="text"
@@ -152,11 +103,7 @@
 
                     <div class="col-md-12 mb-3">
 
-                        <label class="form-label">
-
-                            Catatan
-
-                        </label>
+                        <label class="form-label">Catatan / 备注</label>
 
                         <textarea
                             name="note"
@@ -164,14 +111,15 @@
                             class="form-control">{{ old('note', $expense->note) }}</textarea>
 
                     </div>
-                                    </div>
+
+                </div>
 
                 <div class="d-flex justify-content-end">
 
                     <a href="{{ route('expenses.index') }}"
                        class="btn btn-secondary me-2">
 
-                        Batal
+                        Batal / 取消
 
                     </a>
 
@@ -179,7 +127,7 @@
                         type="submit"
                         class="btn btn-warning">
 
-                        💾 Update Pengeluaran
+                        Update Pengeluaran / 更新支出
 
                     </button>
 

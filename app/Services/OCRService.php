@@ -13,8 +13,14 @@ class OCRService
         $this->gemini = new GeminiService();
     }
 
-    public function scan(string $imagePath): array
+    public function scan(
+        string $imagePath,
+        string $documentType = 'purchase'
+    ): array
     {
-        return $this->gemini->scan($imagePath);
+        return $this->gemini->scan(
+            $imagePath,
+            $documentType
+        );
     }
 }

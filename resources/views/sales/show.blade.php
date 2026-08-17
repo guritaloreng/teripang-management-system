@@ -8,26 +8,18 @@
 
         <div>
 
-            <h2>📤 Detail Nota Penjualan</h2>
+            <h2>Detail Nota Penjualan / 销售单详情</h2>
 
             <small class="text-muted">
-
                 {{ $sale->invoice_number }}
-
             </small>
 
         </div>
 
-        <div>
-
-            <a href="{{ route('sales.index') }}"
-               class="btn btn-secondary">
-
-                ← Kembali
-
-            </a>
-
-        </div>
+        <a href="{{ route('sales.index') }}"
+           class="btn btn-secondary">
+            Kembali / 返回
+        </a>
 
     </div>
 
@@ -38,9 +30,7 @@
             <div class="card shadow-sm">
 
                 <div class="card-header bg-success text-white">
-
-                    Informasi Invoice
-
+                    Informasi Invoice / 发票信息
                 </div>
 
                 <div class="card-body">
@@ -48,83 +38,23 @@
                     <table class="table table-sm">
 
                         <tr>
-
-                            <th width="130">
-
-                                Invoice
-
-                            </th>
-
-                            <td>
-
-                                {{ $sale->invoice_number }}
-
-                            </td>
-
+                            <th width="130">Invoice / 发票</th>
+                            <td>{{ $sale->invoice_number }}</td>
                         </tr>
 
                         <tr>
-
-                            <th>
-
-                                Tanggal
-
-                            </th>
-
-                            <td>
-
-                                {{ $sale->sale_date->format('d-m-Y') }}
-
-                            </td>
-
+                            <th>Tanggal / 日期</th>
+                            <td>{{ $sale->sale_date->format('d-m-Y') }}</td>
                         </tr>
 
                         <tr>
-
-                            <th>
-
-                                Buyer
-
-                            </th>
-
-                            <td>
-
-                                {{ $sale->buyer }}
-
-                            </td>
-
+                            <th>Buyer / 买家</th>
+                            <td>{{ $sale->buyer }}</td>
                         </tr>
 
                         <tr>
-
-                            <th>
-
-                                Shipment
-
-                            </th>
-
-                            <td>
-
-                                {{ $sale->shipment->shipment_number }}
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <th>
-
-                                Catatan
-
-                            </th>
-
-                            <td>
-
-                                {{ $sale->note ?: '-' }}
-
-                            </td>
-
+                            <th>Catatan / 备注</th>
+                            <td>{{ $sale->note ?: '-' }}</td>
                         </tr>
 
                     </table>
@@ -140,48 +70,16 @@
             <div class="card shadow-sm">
 
                 <div class="card-header bg-primary text-white">
-
-                    Ringkasan
-
+                    Ringkasan / 摘要
                 </div>
 
                 <div class="card-body">
 
-                    <div class="row">
+                    <h5>Grand Total / 合计</h5>
 
-                        <div class="col-md-6">
-
-                            <h5>
-
-                                Grand Total
-
-                            </h5>
-
-                            <h3 class="text-success">
-
-                                Rp {{ number_format($grandTotal,0,',','.') }}
-
-                            </h3>
-
-                        </div>
-
-                        <div class="col-md-6">
-
-                            <h5>
-
-                                Status Shipment
-
-                            </h5>
-
-                            <span class="badge bg-primary fs-6">
-
-                                {{ $sale->shipment->status }}
-
-                            </span>
-
-                        </div>
-
-                    </div>
+                    <h3 class="text-success">
+                        Rp {{ number_format($grandTotal,0,',','.') }}
+                    </h3>
 
                 </div>
 
@@ -190,159 +88,125 @@
         </div>
 
     </div>
+
     <div class="card mt-4 shadow-sm">
 
-    <div class="card-header bg-success text-white">
+        <div class="card-header bg-success text-white">
+            Detail Penjualan / 销售明细
+        </div>
 
-        Detail Penjualan
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-hover mb-0">
+
+                <thead class="table-dark">
+
+                    <tr>
+                        <th width="60">No</th>
+                        <th>Jenis Teripang / 海参种类</th>
+                        <th class="text-end">Berat (Kg) / 重量</th>
+                        <th class="text-end">Harga / Kg / 单价</th>
+                        <th class="text-end">Subtotal / 小计</th>
+                        <th class="text-center">Status / 状态</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @forelse($sale->items as $index => $item)
+
+                        <tr>
+
+                            <td>{{ $index + 1 }}</td>
+
+                            <td>{{ $item->type->name }}</td>
+
+                            <td class="text-end">
+                                {{ number_format($item->weight,2) }}
+                            </td>
+
+                            <td class="text-end">
+                                Rp {{ number_format($item->price,0,',','.') }}
+                            </td>
+
+                            <td class="text-end">
+                                Rp {{ number_format($item->subtotal,0,',','.') }}
+                            </td>
+
+                            <td class="text-center">
+
+                                @if($item->status === 'Selesai')
+
+                                    <span class="badge bg-success">
+                                        Selesai / 已完成
+                                    </span>
+
+                                @else
+
+                                    <span class="badge bg-warning text-dark">
+                                        Terjual Sebagian / 部分销售
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                        </tr>
+
+                    @empty
+
+                        <tr>
+                            <td colspan="6"
+                                class="text-center">
+                                Belum ada item penjualan.
+                            </td>
+                        </tr>
+
+                    @endforelse
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     </div>
 
-    <div class="table-responsive">
+    <div class="d-flex justify-content-between mt-4">
 
-        <table class="table table-bordered table-hover mb-0">
-
-            <thead class="table-dark">
-
-                <tr>
-
-                    <th width="60">No</th>
-
-                    <th>Jenis Teripang</th>
-
-                    <th class="text-end">Berat (Kg)</th>
-
-                    <th class="text-end">Harga / Kg</th>
-
-                    <th class="text-end">Subtotal</th>
-
-                    <th class="text-center">Status</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                @forelse($sale->items as $index => $item)
-
-                    <tr>
-
-                        <td>
-
-                            {{ $index + 1 }}
-
-                        </td>
-
-                        <td>
-
-                            {{ $item->type->name }}
-
-                        </td>
-
-                        <td class="text-end">
-
-                            {{ number_format($item->weight,2) }}
-
-                        </td>
-
-                        <td class="text-end">
-
-                            Rp {{ number_format($item->price,0,',','.') }}
-
-                        </td>
-
-                        <td class="text-end">
-
-                            Rp {{ number_format($item->subtotal,0,',','.') }}
-
-                        </td>
-
-                        <td class="text-center">
-
-                            @if($item->status == 'Selesai')
-
-                                <span class="badge bg-success">
-
-                                    Selesai
-
-                                </span>
-
-                            @else
-
-                                <span class="badge bg-warning text-dark">
-
-                                    Terjual Sebagian
-
-                                </span>
-
-                            @endif
-
-                        </td>
-
-                    </tr>
-
-                @empty
-
-                    <tr>
-
-                        <td colspan="6" class="text-center">
-
-                            Belum ada item penjualan.
-
-                        </td>
-
-                    </tr>
-
-                @endforelse
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-<div class="d-flex justify-content-between mt-4">
-
-    <a href="{{ route('sales.index') }}"
-       class="btn btn-secondary">
-
-        ← Daftar Penjualan
-
-    </a>
-
-    <div>
-
-        <a href="{{ route('shipments.show',$sale->shipment) }}"
-           class="btn btn-primary">
-
-            🚚 Lihat Shipment
-
+        <a href="{{ route('sales.index') }}"
+           class="btn btn-secondary">
+            Daftar Penjualan / 销售列表
         </a>
 
-        <form
-            action="{{ route('sales.destroy',$sale) }}"
-            method="POST"
-            class="d-inline"
-            onsubmit="return confirm('Yakin ingin menghapus invoice ini?');">
+        <div>
 
-            @csrf
-            @method('DELETE')
+            <a href="{{ route('sales.edit',$sale) }}"
+               class="btn btn-warning">
+                Edit Invoice / 编辑发票
+            </a>
 
-            <button
-                type="submit"
-                class="btn btn-danger">
+            <form
+                action="{{ route('sales.destroy',$sale) }}"
+                method="POST"
+                class="d-inline"
+                onsubmit="return confirm('Yakin ingin menghapus invoice ini?');">
 
-                🗑 Hapus Invoice
+                @csrf
+                @method('DELETE')
 
-            </button>
+                <button
+                    type="submit"
+                    class="btn btn-danger">
+                    Hapus Invoice / 删除发票
+                </button>
 
-        </form>
+            </form>
+
+        </div>
 
     </div>
-
-</div>
 
 </div>
 

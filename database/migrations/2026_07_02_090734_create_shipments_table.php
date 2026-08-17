@@ -19,11 +19,10 @@ return new class extends Migration
             $table->string('destination')->default('Makassar');
 
             $table->enum('status',[
-                'draft',
-                'shipping',
-                'arrived',
-                'completed'
-            ])->default('draft');
+                'Draft',
+                'Berjalan',
+                'Selesai'
+            ])->default('Draft');
 
             $table->decimal('shipping_cost',18,2)->default(0);
 

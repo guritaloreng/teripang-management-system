@@ -29,11 +29,18 @@ class SupplierController extends Controller
      */
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:suppliers,name'],
+            'region' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'note' => ['nullable', 'string'],
+        ]);
+
         Supplier::create([
-        'name' => $request->name,
-        'region' => $request->region,
-        'phone' => $request->phone,
-        'note' => $request->note,
+        'name' => $validated['name'],
+        'region' => $validated['region'] ?? null,
+        'phone' => $validated['phone'] ?? null,
+        'note' => $validated['note'] ?? null,
     ]);
 
     return redirect()
@@ -46,7 +53,8 @@ class SupplierController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return redirect()
+            ->route('suppliers.index');
     }
 
     /**
@@ -66,11 +74,18 @@ class SupplierController extends Controller
     {
         $supplier = Supplier::findOrFail($id);
 
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255', 'unique:suppliers,name,' . $supplier->id],
+        'region' => ['nullable', 'string', 'max:255'],
+        'phone' => ['nullable', 'string', 'max:50'],
+        'note' => ['nullable', 'string'],
+    ]);
+
     $supplier->update([
-        'name' => $request->name,
-        'region' => $request->region,
-        'phone' => $request->phone,
-        'note' => $request->note,
+        'name' => $validated['name'],
+        'region' => $validated['region'] ?? null,
+        'phone' => $validated['phone'] ?? null,
+        'note' => $validated['note'] ?? null,
     ]);
 
     return redirect()

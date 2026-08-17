@@ -9,10 +9,11 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\InvestorController;
 use App\Http\Controllers\InvestorLedgerController;
 use App\Http\Controllers\OCRController;
-use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\CashTransactionController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\StockOverviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,38 +60,45 @@ Route::post('/ocr', [OCRController::class, 'upload'])
 
 /*
 |--------------------------------------------------------------------------
-| Shipment
-|--------------------------------------------------------------------------
-*/
-
-Route::resource('shipments', ShipmentController::class);
-
-/*
-|--------------------------------------------------------------------------
-| Sale (Create From Shipment)
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/shipments/{shipment}/sale',
-    [SaleController::class, 'create']
-)->name('sales.create');
-
-Route::post(
-    '/shipments/{shipment}/sale',
-    [SaleController::class, 'store']
-)->name('sales.store');
-
-/*
-|--------------------------------------------------------------------------
 | Sale Management
 |--------------------------------------------------------------------------
 */
 
 Route::get(
+    '/sales/create',
+    [SaleController::class, 'create']
+)->name('sales.create');
+
+Route::post(
+    '/sales',
+    [SaleController::class, 'store']
+)->name('sales.store');
+
+Route::post(
+    '/sales/scan-note',
+    [OCRController::class, 'scanSaleNote']
+)->name('sales.scan-note');
+
+Route::get(
+    '/sales/scan-note',
+    [SaleController::class, 'create']
+)->name('sales.scan-note.form');
+
+Route::get(
     '/sales',
     [SaleController::class, 'index']
 )->name('sales.index');
+
+Route::get(
+    '/sales/{sale}/edit',
+    [SaleController::class, 'edit']
+)->name('sales.edit');
+
+Route::match(
+    ['put', 'patch'],
+    '/sales/{sale}',
+    [SaleController::class, 'update']
+)->name('sales.update');
 
 Route::get(
     '/sales/{sale}',
@@ -102,21 +110,6 @@ Route::delete(
     [SaleController::class, 'destroy']
 )->name('sales.destroy');
 
-/*
-|--------------------------------------------------------------------------
-| Shipment Workflow
-|--------------------------------------------------------------------------
-*/
-
-Route::post(
-    '/shipments/{shipment}/arrived',
-    [ShipmentController::class, 'arrived']
-)->name('shipments.arrived');
-
-Route::post(
-    '/shipments/{shipment}/complete',
-    [ShipmentController::class, 'complete']
-)->name('shipments.complete');
 /*
 |--------------------------------------------------------------------------
 | Expense
@@ -138,3 +131,35 @@ Route::get(
     '/cash-book',
     [CashTransactionController::class, 'index']
 )->name('cash-book.index');
+
+/*
+|--------------------------------------------------------------------------
+| Stock Overview
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/stock-overview',
+    [StockOverviewController::class, 'index']
+)->name('stock-overview.index');
+
+Route::patch(
+    '/stock-overview/{seaCucumberType}',
+    [StockOverviewController::class, 'updateStatus']
+)->name('stock-overview.update-status');
+
+/*
+|--------------------------------------------------------------------------
+| Backup
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/backups',
+    [BackupController::class, 'index']
+)->name('backups.index');
+
+Route::post(
+    '/backups',
+    [BackupController::class, 'store']
+)->name('backups.store');

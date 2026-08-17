@@ -4,10 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Investor;
 use App\Models\InvestorLedger;
+use App\Services\CashService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InvestorLedgerController extends Controller
 {
+    protected CashService $cashService;
+
+    public function __construct(
+        CashService $cashService
+    )
+    {
+        $this->cashService = $cashService;
+    }
+
     public function index()
     {
         $ledgers = InvestorLedger::with('investor')
@@ -35,7 +46,14 @@ class InvestorLedgerController extends Controller
             'note' => 'nullable'
         ]);
 
-        InvestorLedger::create($request->all());
+        DB::transaction(function () use ($request) {
+
+            $ledger = InvestorLedger::create($request->all());
+
+            $this->cashService
+                ->createFromInvestorLedger($ledger);
+
+        });
 
         return redirect()
             ->route('investor-ledgers.index')
@@ -59,7 +77,14 @@ class InvestorLedgerController extends Controller
 
     public function destroy(InvestorLedger $investorLedger)
     {
-        $investorLedger->delete();
+        DB::transaction(function () use ($investorLedger) {
+
+            $this->cashService
+                ->deleteFromInvestorLedger($investorLedger);
+
+            $investorLedger->delete();
+
+        });
 
         return redirect()
             ->route('investor-ledgers.index')

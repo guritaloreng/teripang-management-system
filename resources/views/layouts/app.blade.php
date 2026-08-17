@@ -22,6 +22,8 @@
         body{
             background:#f4f6f9;
             margin:0;
+            color:#212529;
+            font-size:14px;
         }
 
         .navbar{
@@ -82,6 +84,48 @@
             padding:30px;
         }
 
+        h2{
+            font-size:1.55rem;
+            font-weight:700;
+        }
+
+        .card{
+            border-radius:8px;
+        }
+
+        .card-body{
+            padding:18px;
+        }
+
+        .btn{
+            min-height:38px;
+            padding-left:14px;
+            padding-right:14px;
+            border-radius:6px;
+        }
+
+        .btn-sm{
+            min-height:31px;
+            padding-left:10px;
+            padding-right:10px;
+        }
+
+        .table > :not(caption) > * > *{
+            padding:10px 12px;
+            vertical-align:middle;
+        }
+
+        .form-label,
+        label{
+            font-weight:600;
+            margin-bottom:6px;
+        }
+
+        .form-control,
+        .form-select{
+            min-height:40px;
+        }
+
     </style>
 
 </head>
@@ -90,7 +134,7 @@
 
 <div class="navbar">
 
-    🐚 Teripang Management System 海参管理系统
+    Teripang Management System / 海参管理系统
 
 </div>
 
@@ -104,8 +148,7 @@
 
                 <a href="{{ route('home') }}">
 
-                    🏠 Dashboard / 仪表盘
-
+                    Dashboard / 仪表盘
                 </a>
 
             </li>
@@ -114,8 +157,7 @@
 
         <h6>
 
-            📋 Master Data / 主数据
-
+            Master Data / 主数据
         </h6>
 
         <ul>
@@ -124,8 +166,7 @@
 
                 <a href="{{ route('suppliers.index') }}">
 
-                    👨 Supplier / 供应商
-
+                    Supplier / 供应商
                 </a>
 
             </li>
@@ -134,7 +175,7 @@
 
                 <a href="{{ route('sea-cucumber-types.index') }}">
 
-                    🐚 Jenis Teripang / 海参种类
+                    Jenis Teripang / 海参种类
 
                 </a>
 
@@ -144,16 +185,25 @@
 
                 <a href="{{ route('investors.index') }}">
 
-                    💰 Investor / 投资人
+                    Investor / 投资人
+                </a>
 
+            </li>
+
+            <li>
+
+                <a href="{{ route('investor-ledgers.index') }}">
+
+                    Investor Ledger / 投资记录
                 </a>
 
             </li>
 
         </ul>
-                <h6>
 
-            🧾 Transaksi / 交易
+        <h6>
+
+            Transaksi / 交易
 
         </h6>
 
@@ -163,7 +213,7 @@
 
                 <a href="{{ route('purchases.index') }}">
 
-                    📥 Nota Pembelian / 采购单
+                    Purchase / 采购
 
                 </a>
 
@@ -171,20 +221,9 @@
 
             <li>
 
-                <a href="{{ route('shipments.index') }}">
+                <a href="{{ route('sales.index') }}">
 
-                    🚚 Pengiriman / 发货
-
-                </a>
-
-            </li>
-
-            <li>
-
-                <a href="#">
-
-                    📤 Nota Penjualan / 销售单
-
+                    Sale / 销售
                 </a>
 
             </li>
@@ -193,7 +232,7 @@
 
                 <a href="{{ route('expenses.index') }}">
 
-                    💸 Pengeluaran / 支出
+                    Expense / 支出
 
                 </a>
 
@@ -203,7 +242,7 @@
 
         <h6>
 
-            📊 Laporan / 报表
+            Laporan / 报表
 
         </h6>
 
@@ -211,56 +250,45 @@
 
             <li>
 
-                <a href="#">
+                <a href="{{ route('cash-book.index') }}">
 
-                    💵 Buku Kas / 现金账
-
+                    Cash Book / 现金簿
                 </a>
 
             </li>
 
             <li>
 
-                <a href="#">
+                <a href="{{ route('stock-overview.index') }}">
 
-                    💵 Cash Flow / 现金流
-
+                    Stock Overview / 库存概览
                 </a>
 
             </li>
 
-            <li>
+        </ul>
 
-                <a href="#">
+        <h6>
 
-                    📈 Profit per Jenis / 每种利润
+            Pengaturan / 设置
 
-                </a>
+        </h6>
 
-            </li>
-
-            <li>
-
-                <a href="#">
-
-                    📦 Profit Pengiriman / 每批利润
-
-                </a>
-
-            </li>
+        <ul>
 
             <li>
 
-                <a href="#">
+                <a href="{{ route('backups.index') }}">
 
-                    📉 Susut / 损耗
+                    Backup Data / 数据备份
 
                 </a>
 
             </li>
 
         </ul>
-            </div>
+
+    </div>
 
     <div class="content">
 

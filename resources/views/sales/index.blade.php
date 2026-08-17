@@ -8,24 +8,24 @@
 
         <div>
 
-            <h2>📤 Nota Penjualan</h2>
+            <h2>Nota Penjualan / 销售单</h2>
 
             <small class="text-muted">
-
-                Daftar seluruh invoice penjualan
-
+                Daftar seluruh invoice penjualan / 所有销售单列表
             </small>
 
         </div>
+
+        <a href="{{ route('sales.create') }}" class="btn btn-primary">
+            Tambah Penjualan / 新增销售
+        </a>
 
     </div>
 
     <div class="card">
 
         <div class="card-header bg-success text-white">
-
-            Daftar Invoice
-
+            Daftar Invoice / 发票列表
         </div>
 
         <div class="table-responsive">
@@ -37,123 +37,79 @@
                     <tr>
 
                         <th width="60">No</th>
-
-                        <th>Invoice</th>
-
-                        <th>Tanggal</th>
-
-                        <th>Buyer</th>
-
-                        <th>Shipment</th>
-
-                        <th class="text-end">
-
-                            Total
-
-                        </th>
-
-                        <th width="180">
-
-                            Aksi
-
-                        </th>
+                        <th>Invoice / 发票</th>
+                        <th>Tanggal / 日期</th>
+                        <th>Buyer / 买家</th>
+                        <th class="text-end">Total / 合计</th>
+                        <th width="220">Aksi / 操作</th>
 
                     </tr>
 
                 </thead>
 
                 <tbody>
-                                    @forelse($sales as $index => $sale)
 
-                    <tr>
+                    @forelse($sales as $index => $sale)
 
-                        <td>
+                        <tr>
 
-                            {{ $sales->firstItem() + $index }}
+                            <td>{{ $sales->firstItem() + $index }}</td>
 
-                        </td>
+                            <td>
+                                <strong>{{ $sale->invoice_number }}</strong>
+                            </td>
 
-                        <td>
+                            <td>{{ $sale->sale_date->format('d-m-Y') }}</td>
 
-                            <strong>
+                            <td>{{ $sale->buyer }}</td>
 
-                                {{ $sale->invoice_number }}
+                            <td class="text-end">
+                                Rp {{ number_format($sale->items->sum('subtotal'), 0, ',', '.') }}
+                            </td>
 
-                            </strong>
+                            <td>
 
-                        </td>
+                                <a href="{{ route('sales.show', $sale) }}" class="btn btn-info btn-sm">
+                                    Detail / 详情
+                                </a>
 
-                        <td>
+                                <a href="{{ route('sales.edit', $sale) }}" class="btn btn-warning btn-sm">
+                                    Edit / 编辑
+                                </a>
 
-                            {{ $sale->sale_date->format('d-m-Y') }}
+                                <form
+                                    action="{{ route('sales.destroy', $sale) }}"
+                                    method="POST"
+                                    class="d-inline">
 
-                        </td>
+                                    @csrf
+                                    @method('DELETE')
 
-                        <td>
+                                    <button
+                                        class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Hapus invoice ini? / 删除此发票？')">
+                                        Hapus / 删除
+                                    </button>
 
-                            {{ $sale->buyer }}
+                                </form>
 
-                        </td>
+                            </td>
 
-                        <td>
+                        </tr>
 
-                            {{ $sale->shipment->shipment_number }}
+                    @empty
 
-                        </td>
+                        <tr>
 
-                        <td class="text-end">
+                            <td colspan="6" class="text-center">
+                                Belum ada invoice penjualan. / 暂无销售发票。
+                            </td>
 
-                            Rp {{ number_format($sale->items->sum('subtotal'),0,',','.') }}
+                        </tr>
 
-                        </td>
+                    @endforelse
 
-                        <td>
-
-                            <a href="{{ route('sales.show',$sale) }}"
-                               class="btn btn-info btn-sm">
-
-                                Detail
-
-                            </a>
-
-                            <form
-                                action="{{ route('sales.destroy',$sale) }}"
-                                method="POST"
-                                class="d-inline">
-
-                                @csrf
-
-                                @method('DELETE')
-
-                                <button
-                                    class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Hapus invoice ini?')">
-
-                                    Hapus
-
-                                </button>
-
-                            </form>
-
-                        </td>
-
-                    </tr>
-
-                @empty
-
-                    <tr>
-
-                        <td colspan="7"
-                            class="text-center">
-
-                            Belum ada invoice penjualan.
-
-                        </td>
-
-                    </tr>
-
-                @endforelse
-                                </tbody>
+                </tbody>
 
             </table>
 
@@ -162,9 +118,7 @@
         @if($sales->hasPages())
 
             <div class="card-footer">
-
                 {{ $sales->links() }}
-
             </div>
 
         @endif

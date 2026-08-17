@@ -4,179 +4,152 @@
 
 <div class="container-fluid">
 
-<div class="d-flex justify-content-between mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-<h2>
+        <h2>Detail Nota Pembelian / 采购详情</h2>
 
-📥 Detail Nota Pembelian / 采购详情
+        <div>
 
-</h2>
+            <a
+                href="{{ route('purchases.index') }}"
+                class="btn btn-secondary">
 
-<a
-href="{{ route('purchases.index') }}"
-class="btn btn-secondary">
+                Kembali / 返回
 
-← Kembali
+            </a>
 
-</a>
+            <a
+                href="{{ route('purchases.edit', $purchase) }}"
+                class="btn btn-warning">
 
-</div>
+                Edit / 编辑
 
-<div class="card mb-4">
+            </a>
 
-<div class="card-body">
+            <form
+                action="{{ route('purchases.destroy', $purchase) }}"
+                method="POST"
+                class="d-inline">
 
-<table class="table">
+                @csrf
+                @method('DELETE')
 
-<tr>
+                <button
+                    type="submit"
+                    class="btn btn-danger"
+                    onclick="return confirm('Hapus purchase ini? / 删除此采购单？')">
 
-<th width="220">
+                    Hapus / 删除
 
-Nomor Purchase
+                </button>
 
-</th>
+            </form>
 
-<td>
+        </div>
 
-{{ $purchase->purchase_number }}
+    </div>
 
-</td>
+    <div class="card mb-4">
 
-</tr>
+        <div class="card-body">
 
-<tr>
+            <table class="table">
 
-<th>
+                <tr>
 
-Tanggal
+                    <th width="220">Nomor Purchase / 采购编号</th>
 
-</th>
+                    <td>{{ $purchase->purchase_number }}</td>
 
-<td>
+                </tr>
 
-{{ $purchase->purchase_date->format('d-m-Y') }}
+                <tr>
 
-</td>
+                    <th>Tanggal / 日期</th>
 
-</tr>
+                    <td>{{ $purchase->purchase_date->format('d-m-Y') }}</td>
 
-<tr>
+                </tr>
 
-<th>
+                <tr>
 
-Supplier
+                    <th>Supplier / 供应商</th>
 
-</th>
+                    <td>{{ $purchase->supplier->name }}</td>
 
-<td>
+                </tr>
 
-{{ $purchase->supplier->name }}
+                <tr>
 
-</td>
+                    <th>Grand Total / 总计</th>
 
-</tr>
+                    <td>Rp {{ number_format($purchase->grand_total, 0, ',', '.') }}</td>
 
-<tr>
+                </tr>
 
-<th>
+            </table>
 
-Grand Total
+        </div>
 
-</th>
+    </div>
 
-<td>
+    <div class="card">
 
-Rp {{ number_format($purchase->grand_total,0,',','.') }}
+        <div class="card-header bg-success text-white">
 
-</td>
+            Detail Barang / 商品明细
 
-</tr>
+        </div>
 
-</table>
+        <div class="card-body p-0">
 
-</div>
+            <table class="table table-bordered mb-0">
 
-</div>
+                <thead class="table-dark">
 
-<div class="card">
+                    <tr>
 
-<div class="card-header bg-success text-white">
+                        <th>No</th>
 
-📦 Detail Barang
+                        <th>Jenis / 种类</th>
 
-</div>
+                        <th>Berat / 重量</th>
 
-<div class="card-body p-0">
+                        <th>Harga/kg / 单价</th>
 
-<table class="table table-bordered mb-0">
+                        <th>Subtotal / 小计</th>
 
-<thead class="table-dark">
+                    </tr>
 
-<tr>
+                </thead>
 
-<th>No</th>
+                <tbody>
 
-<th>Jenis</th>
+                    @foreach($purchase->items as $item)
 
-<th>Berat</th>
+                        <tr>
 
-<th>Harga/kg</th>
+                            <td>{{ $loop->iteration }}</td>
 
-<th>Subtotal</th>
+                            <td>{{ $item->type->name }}</td>
 
-</tr>
+                            <td>{{ number_format($item->purchase_weight, 2) }} Kg</td>
 
-</thead>
+                            <td>Rp {{ number_format($item->price_per_kg, 0, ',', '.') }}</td>
 
-<tbody>
+                            <td>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
 
-@foreach($purchase->items as $item)
+                        </tr>
 
-<tr>
+                    @endforeach
 
-<td>
+                </tbody>
 
-{{ $loop->iteration }}
+            </table>
 
-</td>
+        </div>
 
-<td>
-
-{{ $item->type->name }}
-
-</td>
-
-<td>
-
-{{ number_format($item->purchase_weight,2) }}
-
-Kg
-
-</td>
-
-<td>
-
-Rp {{ number_format($item->price_per_kg,0,',','.') }}
-
-</td>
-
-<td>
-
-Rp {{ number_format($item->subtotal,0,',','.') }}
-
-</td>
-
-</tr>
-
-@endforeach
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 

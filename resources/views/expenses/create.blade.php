@@ -8,11 +8,11 @@
 
         <div>
 
-            <h2>💰 Tambah Pengeluaran</h2>
+            <h2>Tambah Pengeluaran / 新增支出</h2>
 
             <small class="text-muted">
 
-                Input pengeluaran perusahaan
+                Input pengeluaran operasional perusahaan / 录入公司运营支出
 
             </small>
 
@@ -21,7 +21,7 @@
         <a href="{{ route('expenses.index') }}"
            class="btn btn-secondary">
 
-            ← Kembali
+            Kembali / 返回
 
         </a>
 
@@ -31,7 +31,7 @@
 
         <div class="card-header bg-primary text-white">
 
-            Form Pengeluaran
+            Form Pengeluaran / 支出表单
 
         </div>
 
@@ -47,11 +47,7 @@
 
                     <div class="col-md-6 mb-3">
 
-                        <label class="form-label">
-
-                            Tanggal
-
-                        </label>
+                        <label class="form-label">Tanggal / 日期</label>
 
                         <input
                             type="date"
@@ -64,45 +60,7 @@
 
                     <div class="col-md-6 mb-3">
 
-                        <label class="form-label">
-
-                            Shipment (Opsional)
-
-                        </label>
-
-                        <select
-                            name="shipment_id"
-                            class="form-select">
-
-                            <option value="">
-
-                                -- Pengeluaran Umum --
-
-                            </option>
-
-                            @foreach($shipments as $shipment)
-
-                                <option
-                                    value="{{ $shipment->id }}">
-
-                                    {{ $shipment->shipment_number }}
-                                    -
-                                    {{ $shipment->destination }}
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-                                        <div class="col-md-6 mb-3">
-
-                        <label class="form-label">
-
-                            Nama Pengeluaran
-
-                        </label>
+                        <label class="form-label">Nama Pengeluaran / 支出名称</label>
 
                         <input
                             type="text"
@@ -116,11 +74,7 @@
 
                     <div class="col-md-6 mb-3">
 
-                        <label class="form-label">
-
-                            Nominal
-
-                        </label>
+                        <label class="form-label">Nominal / 金额</label>
 
                         <input
                             type="number"
@@ -133,30 +87,23 @@
 
                     </div>
 
-                    <div class="col-md-12 mb-3">
+                    <div class="col-md-6 mb-3">
 
-                        <label class="form-label">
-
-                            Keterangan
-
-                        </label>
+                        <label class="form-label">Keterangan / 说明</label>
 
                         <input
                             type="text"
                             name="description"
                             class="form-control"
                             value="{{ old('description') }}"
-                            placeholder="Contoh : Solar mobil pickup">
+                            placeholder="Contoh : Solar mobil pickup"
+                            required>
 
                     </div>
 
                     <div class="col-md-12 mb-3">
 
-                        <label class="form-label">
-
-                            Catatan
-
-                        </label>
+                        <label class="form-label">Catatan / 备注</label>
 
                         <textarea
                             name="note"
@@ -164,14 +111,15 @@
                             class="form-control">{{ old('note') }}</textarea>
 
                     </div>
-                                    </div>
+
+                </div>
 
                 <div class="d-flex justify-content-end">
 
                     <a href="{{ route('expenses.index') }}"
                        class="btn btn-secondary me-2">
 
-                        Batal
+                        Batal / 取消
 
                     </a>
 
@@ -179,7 +127,7 @@
                         type="submit"
                         class="btn btn-primary">
 
-                        💾 Simpan Pengeluaran
+                        Simpan Pengeluaran / 保存支出
 
                     </button>
 

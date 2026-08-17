@@ -8,11 +8,11 @@
 
         <div>
 
-            <h2>💰 Pengeluaran</h2>
+            <h2>Pengeluaran / 支出</h2>
 
             <small class="text-muted">
 
-                Daftar seluruh pengeluaran perusahaan
+                Daftar seluruh pengeluaran operasional perusahaan / 公司运营支出列表
 
             </small>
 
@@ -21,7 +21,7 @@
         <a href="{{ route('expenses.create') }}"
            class="btn btn-primary">
 
-            + Tambah Pengeluaran
+            Tambah Pengeluaran / 新增支出
 
         </a>
 
@@ -41,7 +41,7 @@
 
         <div class="card-header bg-primary text-white">
 
-            Daftar Pengeluaran
+            Daftar Pengeluaran / 支出列表
 
         </div>
 
@@ -53,24 +53,22 @@
 
                 <tr>
 
-                    <th width="120">Tanggal</th>
+                    <th width="120">Tanggal / 日期</th>
 
-                    <th>Nama</th>
+                    <th>Nama / 名称</th>
 
-                    <th>Shipment</th>
+                    <th class="text-end">Nominal / 金额</th>
 
-                    <th class="text-end">Nominal</th>
+                    <th>Keterangan / 说明</th>
 
-                    <th>Keterangan</th>
-
-                    <th width="150">Aksi</th>
+                    <th width="150">Aksi / 操作</th>
 
                 </tr>
 
                 </thead>
 
                 <tbody>
-                                    @forelse($expenses as $expense)
+                @forelse($expenses as $expense)
 
                     <tr>
 
@@ -83,28 +81,6 @@
                         <td>
 
                             {{ $expense->expense_name }}
-
-                        </td>
-
-                        <td>
-
-                            @if($expense->shipment)
-
-                                <span class="badge bg-success">
-
-                                    {{ $expense->shipment->shipment_number }}
-
-                                </span>
-
-                            @else
-
-                                <span class="badge bg-secondary">
-
-                                    Umum
-
-                                </span>
-
-                            @endif
 
                         </td>
 
@@ -125,7 +101,7 @@
                             <a href="{{ route('expenses.edit',$expense) }}"
                                class="btn btn-warning btn-sm">
 
-                                Edit
+                                Edit / 编辑
 
                             </a>
 
@@ -141,9 +117,9 @@
                                 <button
                                     type="submit"
                                     class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Hapus pengeluaran ini?')">
+                                    onclick="return confirm('Hapus pengeluaran ini? / 删除此支出？')">
 
-                                    Hapus
+                                    Hapus / 删除
 
                                 </button>
 
@@ -157,17 +133,17 @@
 
                     <tr>
 
-                        <td colspan="6"
+                        <td colspan="5"
                             class="text-center">
 
-                            Belum ada data pengeluaran.
+                            Belum ada data pengeluaran. / 暂无支出数据。
 
                         </td>
 
                     </tr>
 
                 @endforelse
-                                </tbody>
+                </tbody>
 
             </table>
 

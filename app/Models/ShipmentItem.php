@@ -4,12 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ShipmentItem extends Model
 {
     protected $fillable = [
 
         'shipment_id',
+
+        'purchase_id',
 
         'sea_cucumber_type_id',
 
@@ -36,12 +39,22 @@ class ShipmentItem extends Model
         return $this->belongsTo(Shipment::class);
     }
 
+    public function purchase(): BelongsTo
+    {
+        return $this->belongsTo(Purchase::class);
+    }
+
     public function type(): BelongsTo
     {
         return $this->belongsTo(
             SeaCucumberType::class,
             'sea_cucumber_type_id'
         );
+    }
+
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
     }
 
     /*

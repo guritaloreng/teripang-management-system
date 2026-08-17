@@ -2,12 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\CashTransaction;
 use App\Models\Expense;
 use Illuminate\Support\Facades\DB;
 
 class ExpenseService
 {
+    protected CashService $cashService;
+
+    public function __construct(
+        CashService $cashService
+    )
+    {
+        $this->cashService = $cashService;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | CREATE EXPENSE
@@ -22,7 +30,7 @@ class ExpenseService
 
                 'expense_date' => $data['expense_date'],
 
-                'shipment_id' => $data['shipment_id'] ?? null,
+                'shipment_id' => null,
 
                 'expense_name' => $data['expense_name'],
 
@@ -34,9 +42,10 @@ class ExpenseService
 
             ]);
 
-            $this->createCashTransaction($expense);
+            $this->cashService
+                ->createFromExpense($expense);
 
-            return $expense->fresh('shipment');
+            return $expense->fresh();
 
         });
     }
@@ -58,7 +67,7 @@ class ExpenseService
 
                 'expense_date' => $data['expense_date'],
 
-                'shipment_id' => $data['shipment_id'] ?? null,
+                'shipment_id' => null,
 
                 'expense_name' => $data['expense_name'],
 
@@ -70,9 +79,10 @@ class ExpenseService
 
             ]);
 
-            $this->updateCashTransaction($expense);
+            $this->cashService
+                ->updateFromExpense($expense);
 
-            return $expense->fresh('shipment');
+            return $expense->fresh();
 
         });
     }
@@ -88,110 +98,11 @@ class ExpenseService
     {
         DB::transaction(function () use ($expense) {
 
-            $this->deleteCashTransaction($expense);
+            $this->cashService
+                ->deleteFromExpense($expense);
 
             $expense->delete();
 
         });
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | CREATE CASH TRANSACTION
-    |--------------------------------------------------------------------------
-    */
-
-    protected function createCashTransaction(
-        Expense $expense
-    ): void
-    {
-        CashTransaction::create([
-
-            'transaction_date' => $expense->expense_date,
-
-            'transaction_type' => 'Operasional',
-
-            'reference_type' => 'expense',
-
-            'reference_id' => $expense->id,
-
-            'description' => $expense->expense_name,
-
-            'cash_in' => 0,
-
-            'cash_out' => $expense->amount,
-
-            'note' => $expense->description,
-
-        ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | UPDATE CASH TRANSACTION
-    |--------------------------------------------------------------------------
-    */
-
-    protected function updateCashTransaction(
-        Expense $expense
-    ): void
-    {
-        $cash = CashTransaction::where(
-
-            'reference_type',
-            'expense'
-
-        )->where(
-
-            'reference_id',
-            $expense->id
-
-        )->first();
-
-        if (! $cash) {
-
-            $this->createCashTransaction($expense);
-
-            return;
-
-        }
-
-        $cash->update([
-
-            'transaction_date' => $expense->expense_date,
-
-            'transaction_type' => 'Operasional',
-
-            'description' => $expense->expense_name,
-
-            'cash_in' => 0,
-
-            'cash_out' => $expense->amount,
-
-            'note' => $expense->description,
-
-        ]);
-    }
-        /*
-    |--------------------------------------------------------------------------
-    | DELETE CASH TRANSACTION
-    |--------------------------------------------------------------------------
-    */
-
-    protected function deleteCashTransaction(
-        Expense $expense
-    ): void
-    {
-        CashTransaction::where(
-
-            'reference_type',
-            'expense'
-
-        )->where(
-
-            'reference_id',
-            $expense->id
-
-        )->delete();
     }
 }

@@ -9,6 +9,7 @@ class SeaCucumberType extends Model
 {
     protected $fillable = [
         'name',
+        'stock_overview_status',
     ];
 
     public function purchaseItems(): HasMany

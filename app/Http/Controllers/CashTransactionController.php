@@ -3,10 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashTransaction;
+use App\Services\CashService;
 use Illuminate\Http\Request;
 
 class CashTransactionController extends Controller
 {
+    protected CashService $cashService;
+
+    public function __construct(
+        CashService $cashService
+    )
+    {
+        $this->cashService = $cashService;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | INDEX
@@ -15,59 +25,21 @@ class CashTransactionController extends Controller
 
     public function index(Request $request)
     {
-        $query = CashTransaction::query();
-
-        if ($request->filled('from')) {
-
-            $query->whereDate(
-                'transaction_date',
-                '>=',
-                $request->from
+        $transactions = $this->cashService
+            ->transactions(
+                $request->only([
+                    'from',
+                    'to',
+                    'transaction_type',
+                    'reference_type',
+                ])
             );
 
-        }
+        $summary = $this->cashService
+            ->summary($transactions);
 
-        if ($request->filled('to')) {
-
-            $query->whereDate(
-                'transaction_date',
-                '<=',
-                $request->to
-            );
-
-        }
-
-        $transactions = $query
-            ->orderBy('transaction_date')
-            ->orderBy('id')
-            ->get();
-
-        $runningBalance = 0;
-
-        foreach ($transactions as $transaction) {
-
-            $runningBalance += $transaction->cash_in;
-
-            $runningBalance -= $transaction->cash_out;
-
-            $transaction->running_balance = $runningBalance;
-
-        }
-                $summary = [
-
-            'total_cash_in' => (float) $transactions->sum('cash_in'),
-
-            'total_cash_out' => (float) $transactions->sum('cash_out'),
-
-            'ending_balance' => (float) (
-                $transactions->sum('cash_in')
-                -
-                $transactions->sum('cash_out')
-            ),
-
-            'total_transactions' => $transactions->count(),
-
-        ];
+        $transactions = $this->cashService
+            ->runningBalance($transactions);
 
         return view(
 
